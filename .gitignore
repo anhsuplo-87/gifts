@@ -6,8 +6,8 @@ dist
 # Tài liệu giữ ở máy đến sau 16/10, không push
 docs/
 .claude/
-# Font chưa rõ giấy phép: chỉ dùng ở máy, không đưa lên repo public
+# Font không dùng / chưa rõ giấy phép: không đưa lên repo public
 public/fonts/zip/
 public/fonts/DFVNPexelGrotesk/
-public/fonts/SVN-Determination-Sans-1/
 public/fonts/FVF-Fernando-08/
+public/fonts/**/*.url
