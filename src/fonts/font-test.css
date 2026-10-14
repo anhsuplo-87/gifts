@@ -17,7 +17,7 @@
 .scale {
   display: inline-block;
   min-width: 3.5em;
-  font: 12px/1 'Nunito', sans-serif;
+  font: 11px/1.2 'Nunito', sans-serif;
   color: var(--muted);
   vertical-align: middle;
 }
@@ -33,3 +33,4 @@
 .muted { color: var(--muted); }
 .warn { color: #b3261e; font-weight: 700; }
 .missing { font-size: 0.85rem; color: var(--muted); overflow-wrap: anywhere; }
+.font-row h2 small.ok { color: #2e7d32; font-weight: 700; }

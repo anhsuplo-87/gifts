@@ -11,15 +11,21 @@ import './font-test.css';
 const SAMPLE = 'Chúc mừng sinh nhật! Hỗ trợ dân Design — Bá Lương tặng. Ặ ẫ ỡ ự ổ ề Đ đ 0123456789';
 const SCALES = [1, 2, 3, 4];
 
-type Metric = { basePx: number | null; exact: boolean | null; missing: string };
+type Metric = { file: string | null; basePx: number | null; exact: boolean | null; missing: string };
 const M = metrics as Record<string, Metric>;
 
 type FontDef = { name: string; family: string; pixel: boolean; file?: string };
 
+const missingCount = (name: string) => [...(M[name]?.missing ?? '')].length;
+
+// Font trong public/fonts (lấy từ font-metrics.json), font đủ dấu lên đầu
+const LOCAL: FontDef[] = Object.entries(M)
+  .filter(([, m]) => m.file)
+  .map(([name, m]) => ({ name, family: `local ${name}`, pixel: true, file: m.file! }))
+  .sort((a, b) => missingCount(a.name) - missingCount(b.name) || a.name.localeCompare(b.name));
+
 const FONTS: FontDef[] = [
-  { name: 'm5x7', family: 'm5x7', pixel: true, file: 'm5x7.ttf' },
-  { name: 'm6x11', family: 'm6x11', pixel: true, file: 'm6x11.ttf' },
-  { name: 'm6x11plus', family: 'm6x11plus', pixel: true, file: 'm6x11plus.ttf' },
+  ...LOCAL,
   { name: 'Pixelify Sans', family: 'Pixelify Sans', pixel: true },
   { name: 'Geist Pixel', family: 'Geist Pixel', pixel: true },
   { name: 'Nunito', family: 'Nunito', pixel: false },
@@ -28,7 +34,7 @@ const FONTS: FontDef[] = [
 
 // Nạp font tự host trong public/fonts nếu file có mặt; trả về false nếu thiếu
 async function loadLocal(def: FontDef): Promise<boolean> {
-  const url = `${import.meta.env.BASE_URL}fonts/${def.file}`;
+  const url = `${import.meta.env.BASE_URL}fonts/${encodeURI(def.file!)}`;
   try {
     const face = new FontFace(def.family, `url(${url})`);
     await face.load();
@@ -47,7 +53,7 @@ function FontRow({ def }: { def: FontDef }) {
 
   const m = M[def.name];
   const missing = m?.missing ?? '';
-  const missingCount = [...missing].length;
+  const missingN = missingCount(def.name);
 
   return (
     <section class="font-row">
@@ -58,7 +64,7 @@ function FontRow({ def }: { def: FontDef }) {
             {' '}· cỡ gốc {m.basePx}px{m.exact === false ? ' (xấp xỉ, font không vẽ đúng lưới)' : ''}
           </small>
         )}
-        <small> · thiếu {missingCount}/134 chữ có dấu</small>
+        {missingN === 0 ? <small class="ok"> · đủ 134/134 chữ có dấu ✓</small> : <small> · thiếu {missingN}/134 chữ có dấu</small>}
       </h2>
       {state === 'missing' && <p class="warn">Thiếu file public/fonts/{def.file}</p>}
       {state === 'loading' && <p class="muted">Đang tải…</p>}
@@ -72,7 +78,11 @@ function FontRow({ def }: { def: FontDef }) {
                 class="sample pixel-text"
                 style={{ fontFamily: `'${def.family}', monospace`, fontSize: `${size}px`, lineHeight: `${Math.round(size * 1.4)}px` }}
               >
-                <span class="scale">×{k}</span>
+                <span class="scale" title={Number.isInteger(size) ? '' : 'Cỡ lẻ, có thể nhoè'}>
+                  ×{k}
+                  <br />
+                  {+size.toFixed(2)}px{Number.isInteger(size) ? '' : '*'}
+                </span>
                 {SAMPLE}
               </p>
             );
@@ -85,7 +95,7 @@ function FontRow({ def }: { def: FontDef }) {
             </p>
           ))
         ))}
-      {missingCount > 0 && <p class="missing">Thiếu: {missing}</p>}
+      {missingN > 0 && <p class="missing">Thiếu: {missing}</p>}
     </section>
   );
 }

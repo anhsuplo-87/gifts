@@ -1,35 +1,78 @@
 {
+  "dearpix-1-94": {
+    "file": "dearpix-1-94/dearpix-1-94.otf",
+    "basePx": 16,
+    "exact": true,
+    "missing": ""
+  },
+  "dearpix-2-01": {
+    "file": "dearpix-2-01/dearpix-2-01.otf",
+    "basePx": 16,
+    "exact": true,
+    "missing": ""
+  },
+  "DFVN Pexel Grotesk": {
+    "file": "DFVNPexelGrotesk/DFVN Pexel Grotesk.ttf",
+    "basePx": 12.987,
+    "exact": false,
+    "missing": ""
+  },
+  "FVF Fernando 08": {
+    "file": "FVF-Fernando-08/FVF Fernando 08.ttf",
+    "basePx": 8,
+    "exact": true,
+    "missing": ""
+  },
+  "kvn-97": {
+    "file": "kvn-97/kvn-97.otf",
+    "basePx": 9,
+    "exact": true,
+    "missing": ""
+  },
   "m5x7": {
+    "file": "m5x7.ttf",
     "basePx": 16,
     "exact": true,
     "missing": "ảạằắẳẵặầấẩẫậẻẽẹềếểễệỉịỏọồốổỗộơờớởỡợủụưừứửữựỳỷỹỵẢẠẰẮẲẴẶẦẤẨẪẬẺẼẸỀẾỂỄỆỈỊỎỌỒỐỔỖỘƠỜỚỞỠỢỦỤƯỪỨỬỮỰỲỶỸỴ"
   },
   "m6x11": {
+    "file": "m6x11.ttf",
     "basePx": 16,
     "exact": true,
     "missing": "àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬÈÉẺẼẸÊỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴĐ"
   },
   "m6x11plus": {
+    "file": "m6x11plus.ttf",
     "basePx": 18,
     "exact": true,
     "missing": "ảạằắẳẵặầấẩẫậẻẽẹềếểễệỉĩịỏọồốổỗộơờớởỡợủũụưừứửữựỳỷỹỵẢẠẰẮẲẴẶẦẤẨẪẬẺẼẸỀẾỂỄỆỈĨỊỎỌỒỐỔỖỘƠỜỚỞỠỢỦŨỤƯỪỨỬỮỰỲỶỸỴ"
   },
+  "SVN-Determination Sans": {
+    "file": "SVN-Determination-Sans-1/SVN-Determination Sans.otf",
+    "basePx": 13.333,
+    "exact": true,
+    "missing": ""
+  },
   "Pixelify Sans": {
+    "file": null,
     "basePx": 9.901,
     "exact": false,
     "missing": "ảạằắẳẵặầấẩẫậẻẽẹềếểễệỉịỏọồốổỗộơờớởỡợủụưừứửữựỷỹỵẢẠẰẮẲẴẶẦẤẨẪẬẺẼẸỀẾỂỄỆỈỊỎỌỒỐỔỖỘƠỜỚỞỠỢỦỤƯỪỨỬỮỰỶỸỴ"
   },
   "Geist Pixel": {
+    "file": null,
     "basePx": 8.772,
     "exact": false,
     "missing": "ảạằắẳẵặầấẩẫậẻẽẹềếểễệỉịỏọồốổỗộơờớởỡợủụưừứửữựỷỵẢẠẰẮẲẴẶẦẤẨẪẬẺẼẸỀẾỂỄỆỈỊỎỌỒỐỔỖỘƠỜỚỞỠỢỦỤƯỪỨỬỮỰỶỴ"
   },
   "Nunito": {
+    "file": null,
     "basePx": null,
     "exact": null,
     "missing": ""
   },
   "Inter": {
+    "file": null,
     "basePx": null,
     "exact": null,
     "missing": ""
