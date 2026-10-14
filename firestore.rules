@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // UID admin — thay bằng UID thật trước khi deploy (xem README). Test tự thay bằng UID giả.
+    function adminUid() { return 'ADMIN_UID_PLACEHOLDER'; }
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin()  { return signedIn() && request.auth.uid == adminUid(); }
+    function isOwner(email) {
+      return signedIn() && request.auth.token.email_verified == true
+        && request.auth.token.email.lower() == email;
+    }
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+
+    function validReveal() {
+      return changed().hasOnly(['revealedAt'])
+        && resource.data.revealedAt == null
+        && request.resource.data.revealedAt == request.time;
+    }
+    function validStick() {
+      let d = request.resource.data;
+      return changed().hasOnly(['used', 'usedAt', 'slot'])
+        && ( (resource.data.used == false && d.used == true
+              && d.usedAt == request.time && d.slot is int && d.slot >= 0 && d.slot < 10)
+          || (resource.data.used == true && d.used == false
+              && d.usedAt == null && d.slot == null
+              && request.time < resource.data.usedAt + duration.value(24, 'h')) );
+    }
+
+    match /vouchers/{email} {
+      allow read:   if isAdmin() || isOwner(email);
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (isOwner(email) && validReveal());
+      match /items/{itemId} {
+        allow read:           if isAdmin() || isOwner(email);
+        allow create, delete: if isAdmin();
+        allow update:         if isAdmin() || (isOwner(email) && validStick());
+      }
+      match /history/{id} {
+        allow read:  if isAdmin() || isOwner(email);
+        allow write: if isAdmin();
+      }
+    }
+    match /{path=**}/items/{itemId} { allow read: if isAdmin(); }   // "Mới dán"
+  }
+}
