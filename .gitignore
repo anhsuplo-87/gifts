@@ -1,0 +1,8 @@
+node_modules
+dist
+*.aseprite
+*.log
+.firebase
+# Tài liệu giữ ở máy đến sau 16/10, không push
+docs/
+.claude/

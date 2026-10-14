@@ -1,0 +1,36 @@
+:root {
+  --cream: #f6efdc;
+  --ink: #3a2e2a;
+  --muted: #7a6a5f;
+  --line: #d9ccb0;
+  /* Cỡ 1 pixel gốc, luôn là số nguyên (SPEC §7) */
+  --px: 3px;
+  color-scheme: light;
+}
+@media (max-width: 343px) { :root { --px: 2px; } }
+@media (min-width: 768px) { :root { --px: 4px; } }
+@media (min-width: 1280px) { :root { --px: 5px; } }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Nunito', 'Inter', system-ui, sans-serif;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+img, canvas, .pixelated { image-rendering: pixelated; }
+
+.center {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--px) * 4);
+  padding: 16px;
+  text-align: center;
+}
+.soon p { margin: 0; font-size: 1.25rem; font-weight: 700; }
+.pixel-icon { width: calc(var(--px) * 12); height: calc(var(--px) * 12); display: block; }

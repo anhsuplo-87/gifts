@@ -1,0 +1,25 @@
+{
+  "name": "gifts",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "check:fonts": "node scripts/check-font-glyphs.mjs"
+  },
+  "dependencies": {
+    "@fontsource/geist-pixel": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/nunito": "^5.3.0",
+    "@fontsource/pixelify-sans": "^5.3.0",
+    "preact": "^11.0.1"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.6",
+    "fontkit": "^2.0.4",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4"
+  }
+}

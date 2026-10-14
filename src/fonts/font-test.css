@@ -1,0 +1,35 @@
+.font-test {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+}
+.font-test h1 { margin: 0 0 8px; }
+.font-row {
+  border-top: 2px solid var(--line);
+  padding: 12px 0;
+}
+.font-row h2 { font-size: 1.1rem; margin: 0 0 8px; }
+.font-row h2 small { font-weight: 400; color: var(--muted); }
+.sample {
+  margin: 4px 0;
+  overflow-wrap: anywhere;
+}
+.scale {
+  display: inline-block;
+  min-width: 3.5em;
+  font: 12px/1 'Nunito', sans-serif;
+  color: var(--muted);
+  vertical-align: middle;
+}
+/* Tắt khử răng cưa ở nơi trình duyệt cho phép */
+.pixel-text {
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  font-smooth: never;
+  text-rendering: optimizeSpeed;
+  font-kerning: none;
+  font-synthesis: none;
+}
+.muted { color: var(--muted); }
+.warn { color: #b3261e; font-weight: 700; }
+.missing { font-size: 0.85rem; color: var(--muted); overflow-wrap: anywhere; }
