@@ -30,7 +30,7 @@ Trang thử font: `http://localhost:5173/gifts/?fonts`.
 | m6x11, m6x11plus | Daniel Linssen | "Free to use with attribution" — **phải ghi công** nếu dùng | https://managore.itch.io/m6x11 |
 | dearpix-1-94, dearpix-2-01 | ygygfu (Fontstruct) | SIL OFL 1.1 — `license.txt` trong thư mục | https://fontstruct.com/fontstructions/show/2815314 · https://fontstruct.com/fontstructions/show/2872297 |
 | kvn-97 | Kiên Trung (Fontstruct) | SIL OFL 1.1 — `license.txt` trong thư mục | https://fontstruct.com/fontstructions/show/2305827 |
-| SVN-Determination Sans | Haley Wakamatsu; Việt hoá: STYLEno.1 Fonts | Theo trang tải: "Font miễn phí cho mọi mục đích sử dụng" — xem `SOURCE.md` trong thư mục | https://www.svnfont.com/viet-hoa-svn-determination-sans/ |
+| SVN-Determination Sans | Haley Wakamatsu (Determination, 2015) dựa trên 8-bit Operator (Grand Chaos Productions); Việt hoá: STYLEno.1 Fonts | Trang tải svnfont: "Font miễn phí cho mọi mục đích sử dụng"; bản gốc trên Behance ghi "Free font"; 8-bit Operator theo SIL OFL 1.1 — chuỗi nguồn đầy đủ trong `SOURCE.md` | https://www.svnfont.com/viet-hoa-svn-determination-sans/ · https://www.behance.net/gallery/31268855/Determination-Better-Undertale-Font |
 
 ## Firestore rules
 

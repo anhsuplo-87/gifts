@@ -8,6 +8,9 @@ docs/
 .claude/
 # Font không dùng / chưa rõ giấy phép: không đưa lên repo public
 public/fonts/zip/
+public/fonts/*.zip
+public/fonts/*.ZIP
+public/fonts/DTM/
 public/fonts/DFVNPexelGrotesk/
 public/fonts/FVF-Fernando-08/
 public/fonts/**/*.url
