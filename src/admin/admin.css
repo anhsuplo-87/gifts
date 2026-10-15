@@ -1,0 +1,162 @@
+/* Admin (task 005): giao diện đơn giản, sạch — Nunito, không pixel chrome. Tải cùng chunk admin. */
+.adm {
+  --a-ink: #2b2233;
+  --a-muted: #6b6170;
+  --a-line: #e4dccb;
+  --a-card: #fffdf8;
+  --a-accent: #1b6f66;
+  --a-danger: #b3261e;
+  --a-warn-bg: #fff4d6;
+  width: 100%;
+  max-width: 1120px;
+  padding: 8px 0 48px;
+  color: var(--a-ink);
+  font-size: 15px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.adm h1 { font-size: 22px; font-weight: 800; line-height: 1.25; }
+.adm h2 { font-size: 16px; font-weight: 800; margin-bottom: 10px; }
+.adm small { font-size: 13px; }
+.adm-muted { color: var(--a-muted); font-weight: 400; }
+.adm-error { color: var(--a-danger); font-weight: 700; margin: 4px 0; }
+.adm-hint { background: var(--a-warn-bg); padding: 6px 10px; border-radius: 8px; margin: 6px 0; }
+.adm-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: space-between; }
+.adm-head h1 { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.adm-back { color: var(--a-accent); text-decoration: none; font-weight: 700; flex-basis: 100%; }
+.adm-card {
+  background: var(--a-card);
+  border: 1px solid var(--a-line);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  min-width: 0;
+}
+
+/* Nút */
+.adm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--a-line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--a-ink);
+  font: 700 14px 'Nunito', sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.adm-btn:hover:not(:disabled) { border-color: var(--a-ink); }
+.adm-btn:disabled { opacity: 0.45; cursor: default; }
+.adm-btn--primary { background: var(--a-accent); border-color: var(--a-accent); color: #fff; }
+.adm-btn--primary:hover:not(:disabled) { background: #155a53; border-color: #155a53; }
+.adm-btn--danger { color: var(--a-danger); }
+.adm-btn--danger:hover:not(:disabled) { border-color: var(--a-danger); }
+.adm-btn--icon { width: 40px; padding: 0; }
+.adm-link {
+  background: none;
+  border: 0;
+  padding: 4px 2px;
+  color: var(--a-accent);
+  font: 700 14px 'Nunito', sans-serif;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.adm-link:disabled { opacity: 0.45; cursor: default; }
+.adm-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+
+/* Thẻ nhỏ */
+.adm-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.adm-tag { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: #f1ebde; color: var(--a-muted); white-space: nowrap; }
+.adm-tag--designer { background: #ffe3dc; color: #a23a28; }
+.adm-tag--gamer { background: #e6e0ff; color: #4b3a99; }
+.adm-tag--ok { background: #d9f2e6; color: #1b6f46; }
+
+/* Mới dán */
+.adm-recent, .adm-list, .adm-stickers, .adm-copies { list-style: none; margin: 0; padding: 0; }
+.adm-recent { max-height: 340px; overflow-y: auto; }
+.adm-recent__row, .adm-list__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 4px;
+  border-top: 1px solid var(--a-line);
+  color: inherit;
+  text-decoration: none;
+}
+.adm-recent li:first-child .adm-recent__row, .adm-list li:first-child .adm-list__row { border-top: 0; }
+.adm-recent__row:hover, .adm-list__row:hover { background: #faf5ea; }
+.adm-recent__text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.adm-recent__text small, .adm-sticker__text small { color: var(--a-muted); overflow-wrap: anywhere; }
+.adm-recent__time { font-size: 13px; color: var(--a-muted); white-space: nowrap; }
+.adm-thumb { flex: none; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #f4efe4; border-radius: 8px; }
+.adm-thumb--lg { width: 56px; height: 56px; }
+
+/* Danh sách voucher */
+.adm-list__row { flex-wrap: wrap; }
+.adm-list__main { flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; overflow-wrap: anywhere; }
+
+/* Form */
+.adm-editor { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (min-width: 900px) {
+  .adm-editor { grid-template-columns: minmax(0, 1fr) minmax(0, 520px); }
+  .adm-preview-col { position: sticky; top: 52px; }
+}
+.adm-form { display: flex; flex-direction: column; gap: 12px; }
+.adm-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.adm-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.adm-field > label, .adm-label { font-weight: 700; font-size: 14px; }
+.adm-input {
+  width: 100%;
+  min-height: 40px;
+  padding: 6px 10px;
+  border: 1px solid #cfc5b2;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--a-ink);
+  font: 15px 'Nunito', sans-serif;
+}
+.adm-input:focus { outline: 2px solid var(--a-accent); outline-offset: 0; border-color: var(--a-accent); }
+.adm-input:disabled { background: #f4efe4; color: var(--a-muted); }
+.adm-input--sm { width: auto; min-height: 32px; padding: 2px 6px; }
+.adm-textarea { resize: vertical; line-height: 1.45; }
+.adm-inline { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.adm-inline .adm-input { flex: 1; min-width: 0; }
+.adm-savebar { display: flex; align-items: center; gap: 12px; position: sticky; bottom: 0; padding: 8px 0 0; background: var(--a-card); }
+.adm-status { font-weight: 700; color: var(--a-accent); font-size: 14px; }
+
+/* Xem trước */
+.adm-preview-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.adm-preview-head h2 { margin: 0; }
+.adm-preview {
+  display: flex;
+  justify-content: center;
+  padding: 20px 8px 24px;
+  border-radius: 10px;
+  background: var(--c-bg);
+  overflow: hidden;
+}
+.adm-warn { list-style: none; margin: 10px 0 0; padding: 8px 10px; background: var(--a-warn-bg); border-radius: 8px; font-size: 14px; }
+
+/* Sticker */
+.adm-sticker { border-top: 1px solid var(--a-line); padding: 10px 0; }
+.adm-stickers > li:first-child { border-top: 0; }
+.adm-sticker__top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.adm-sticker__text { flex: 1 1 180px; min-width: 0; display: flex; flex-direction: column; }
+.adm-sticker__btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.adm-copies { margin: 6px 0 0 68px; font-size: 14px; }
+.adm-copies li { padding: 2px 0; }
+@media (max-width: 520px) { .adm-copies { margin-left: 0; } }
+.adm-stform { border: 1px dashed #cfc5b2; border-radius: 10px; padding: 12px; margin: 10px 0; background: #fff; }
+.adm-stform__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.adm-stform__fields { display: flex; flex-direction: column; gap: 10px; }
+.adm-cellprev { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; background: var(--c-paper); }
+.adm-cellprev small { color: var(--c-muted); }
+.adm-cellprev__cell { position: relative; flex: none; background-size: 100% 100%; image-rendering: pixelated; }
+.adm-danger { margin-top: 12px; padding: 12px; border: 1px solid var(--a-danger); border-radius: 8px; display: flex; flex-direction: column; gap: 8px; }

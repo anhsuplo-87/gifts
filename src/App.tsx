@@ -15,8 +15,8 @@ import { VoucherScreen } from './voucher/VoucherScreen.tsx';
 const FontTest = import.meta.env.DEV
   ? lazy(() => import('./fonts/FontTest').then((m) => ({ default: m.FontTest })))
   : null;
-// Admin tạm (task 004) — tải riêng, chỉ khi đăng nhập bằng UID admin
-const AdminPlaceholder = lazy(() => import('./admin/AdminPlaceholder.tsx').then((m) => ({ default: m.AdminPlaceholder })));
+// Admin (task 005) — tải riêng, chỉ khi đăng nhập bằng UID admin
+const Admin = lazy(() => import('./admin/Admin.tsx').then((m) => ({ default: m.Admin })));
 
 export function App() {
   if (FontTest && new URLSearchParams(location.search).has('fonts')) {
@@ -100,7 +100,7 @@ function GiftApp() {
   else if (state.kind === 'admin')
     body = (
       <Suspense fallback={<LoadingScreen />}>
-        <AdminPlaceholder route={route} />
+        <Admin route={route} />
       </Suspense>
     );
   else if (state.kind === 'noVoucher') body = <EmptyScreen email={state.email} onSwitch={signOut} />;

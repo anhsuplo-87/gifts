@@ -1,4 +1,8 @@
-// Màn admin TẠM (task 004): chỉ có "Xem như bạn bè" (chỉ đọc). Task 005 làm admin thật.
+// Admin (task 005, SPEC §2.2) — tải riêng (lazy) chỉ khi đăng nhập bằng UID admin.
+//   #/admin              → AdminHome (Mới dán + danh sách voucher)
+//   #/admin/new          → tạo voucher
+//   #/admin/v/<email>    → sửa voucher + sticker
+//   #/admin/v/<email>/xem → xem như bạn bè (chỉ đọc)
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { PreviewRepo } from '../data/firestore.ts';
 import type { ViewState } from '../data/types.ts';
@@ -6,43 +10,15 @@ import { navigate, type Route } from '../router.ts';
 import { Button } from '../ui/Kit.tsx';
 import { ErrorScreen, LoadingScreen } from '../ui/Screens.tsx';
 import { VoucherScreen } from '../voucher/VoucherScreen.tsx';
+import { AdminHome } from './AdminHome.tsx';
+import { VoucherEditor } from './VoucherEditor.tsx';
+import './admin.css';
 
-export function AdminPlaceholder({ route }: { route: Route }) {
+export function Admin({ route }: { route: Route }) {
   if (route.name === 'adminPreview') return <AdminPreview email={route.email} />;
+  if (route.name === 'adminNew') return <VoucherEditor key="new" email={null} />;
+  if (route.name === 'adminEdit') return <VoucherEditor key={route.email} email={route.email} />;
   return <AdminHome />;
-}
-
-function AdminHome() {
-  const [email, setEmail] = useState('');
-  const go = (e: Event) => {
-    e.preventDefault();
-    const v = email.trim().toLowerCase();
-    if (v) navigate({ name: 'adminPreview', email: v });
-  };
-  return (
-    <main class="screen">
-      <h1 class="pt2">Admin</h1>
-      <p class="lead">Đang làm (task 005). Tạm thời có thể xem voucher của một email ở chế độ chỉ đọc.</p>
-      <form class="admin-form" onSubmit={go}>
-        <label class="sr-only" for="admin-email">
-          Email bạn bè
-        </label>
-        <input
-          id="admin-email"
-          class="field"
-          type="email"
-          inputMode="email"
-          autoComplete="off"
-          placeholder="email@ví-dụ.com"
-          value={email}
-          onInput={(e) => setEmail((e.currentTarget as HTMLInputElement).value)}
-        />
-        <Button icon="iconCheck" onClick={() => go(new Event('submit'))}>
-          Xem như bạn bè
-        </Button>
-      </form>
-    </main>
-  );
 }
 
 function AdminPreview({ email }: { email: string }) {
@@ -55,7 +31,7 @@ function AdminPreview({ email }: { email: string }) {
         <span>
           Xem như <b>{email}</b> — chỉ đọc
         </span>
-        <Button variant="secondary" onClick={() => navigate({ name: 'admin' })}>
+        <Button variant="secondary" onClick={() => navigate({ name: 'adminEdit', email })}>
           Quay lại
         </Button>
       </div>
