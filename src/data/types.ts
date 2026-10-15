@@ -30,7 +30,9 @@ export type ViewState =
   | { kind: 'signedOut' }
   | { kind: 'noVoucher'; email: string }
   | { kind: 'error'; message: string; email?: string }
-  | { kind: 'ready'; email: string; voucher: Voucher; items: Item[] };
+  | { kind: 'ready'; email: string; voucher: Voucher; items: Item[] }
+  /** Đăng nhập bằng UID admin → #/admin */
+  | { kind: 'admin'; email: string; uid: string };
 
 export interface GiftRepo {
   /** Theo dõi trạng thái (đăng nhập + voucher + items). Trả về hàm huỷ. */
