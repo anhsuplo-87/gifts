@@ -28,9 +28,9 @@ import { firebase } from '../firebase.ts';
 import { THEME_IDS, type ThemeId } from '../voucher/themes.ts';
 import { DEFAULT_REVEAL_TEXT, type GiftRepo, type Item, type ViewState, type Voucher } from './types.ts';
 
-const toDate = (v: unknown): Date | null => (v && typeof (v as Timestamp).toDate === 'function' ? (v as Timestamp).toDate() : null);
+export const toDate = (v: unknown): Date | null => (v && typeof (v as Timestamp).toDate === 'function' ? (v as Timestamp).toDate() : null);
 
-function toVoucher(email: string, d: DocumentData): Voucher {
+export function toVoucher(email: string, d: DocumentData): Voucher {
   return {
     email,
     theme: (THEME_IDS as readonly string[]).includes(d.theme) ? (d.theme as ThemeId) : 'designer',
@@ -45,13 +45,14 @@ function toVoucher(email: string, d: DocumentData): Voucher {
   };
 }
 
-function toItem(id: string, d: DocumentData): Item {
+export function toItem(id: string, d: DocumentData): Item {
   return {
     id,
     title: String(d.title ?? ''),
     description: String(d.description ?? ''),
     image: typeof d.image === 'string' ? d.image : null,
     order: Number(d.order) || 0,
+    group: typeof d.group === 'string' && d.group ? d.group : null,
     used: d.used === true,
     usedAt: toDate(d.usedAt),
     slot: typeof d.slot === 'number' ? d.slot : null,

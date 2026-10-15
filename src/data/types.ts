@@ -20,6 +20,8 @@ export type Item = {
   description: string;
   image: string | null;
   order: number;
+  /** Các bản sao cùng loại (sticker ×N) có chung group — tuỳ chọn */
+  group?: string | null;
   used: boolean;
   usedAt: Date | null;
   slot: number | null;
@@ -53,3 +55,6 @@ export const canPeel = (item: Item, now = Date.now()) =>
   item.used && item.usedAt !== null && now < item.usedAt.getTime() + PEEL_WINDOW_MS;
 
 export const DEFAULT_REVEAL_TEXT = 'Chúc mừng sinh nhật — chạm để tiết lộ';
+
+/** Khoá gộp nhóm: bản sao cùng `group` gộp làm một; không có group thì mỗi item một nhóm */
+export const groupKey = (it: Item) => it.group || it.id;
