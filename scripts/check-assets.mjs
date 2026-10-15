@@ -4,9 +4,10 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PNG } from 'pngjs';
 import { allAssetFiles } from '../src/voucher/assets.ts';
+import { validateLayout } from '../src/voucher/layout.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const errors = [];
+const errors = validateLayout().map((e) => `BỐ CỤC  ${e}`);
 let ok = 0;
 
 for (const a of allAssetFiles()) {

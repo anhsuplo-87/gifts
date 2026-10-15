@@ -30,6 +30,12 @@ export function StickerImg({ item, theme, kind, box, unit }: { item: Item; theme
     style = { width: len(nat.w), height: len(nat.h) };
     // --s = cỡ 1 pixel của ảnh, dùng cho viền trắng + bóng (filter trên .sticker)
     wrap = { '--s': unit === 'u' ? (k >= 1 ? `calc(${k} * var(--px))` : 'var(--px)') : `${Math.max(1, Math.round(k))}px` };
+    if (unit === 'u') {
+      // căn giữa ô bằng toạ độ nguyên pixel gốc (flex căn giữa có thể rơi vào nửa pixel)
+      const dw = Math.floor((box - nat.w * k) / 2);
+      const dh = Math.floor((box - nat.h * k) / 2);
+      Object.assign(wrap, { position: 'absolute', left: `calc(${dw} * var(--px))`, top: `calc(${dh} * var(--px))` });
+    }
   }
   if (placeholder) style.filter = `hue-rotate(${hueOf(item.id)}deg)`;
   return (

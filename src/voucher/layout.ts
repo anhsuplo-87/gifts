@@ -54,6 +54,23 @@ export function cellRect(kind: LayoutKind, i: number): Rect {
 /** Số ô tối đa mỗi bố cục vẽ được */
 export const maxCells = (kind: LayoutKind) => LAYOUTS[kind].cols * LAYOUTS[kind].rows;
 
+/** Kiểm tra các số trên còn khớp nhau (ô nằm trong voucher, sticker vừa ô, vùng chữ trong voucher) */
+export function validateLayout(): string[] {
+  const errs: string[] = [];
+  const inside = (name: string, r: Rect) => {
+    if (r.x < 0 || r.y < 0 || r.x + r.w > VOUCHER.w || r.y + r.h > VOUCHER.h)
+      errs.push(`${name} (${r.x},${r.y} ${r.w}×${r.h}) tràn khỏi voucher ${VOUCHER.w}×${VOUCHER.h}`);
+  };
+  for (const [k, r] of Object.entries(FRONT)) inside(`FRONT.${k}`, r);
+  for (const kind of Object.keys(LAYOUTS) as LayoutKind[]) {
+    const L = LAYOUTS[kind];
+    if (L.sticker > L.cell) errs.push(`${kind}: sticker ${L.sticker} lớn hơn ô ${L.cell}`);
+    inside(`${kind}.header`, L.header);
+    inside(`${kind} ô cuối`, cellRect(kind, maxCells(kind) - 1));
+  }
+  return errs;
+}
+
 /** Parallax: độ dịch tối đa (pixel gốc) của từng lớp */
 export const PARALLAX = { bg: 0, deco: 1, content: 2, shine: 3 } as const;
 
