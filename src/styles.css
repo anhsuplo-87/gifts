@@ -458,6 +458,21 @@ h1, h2, p { margin: 0; }
   background: rgb(255 255 255 / 0.6);
   transform: translateY(-2px);
 }
+/* Sticker ×N (task 005): huy hiệu số bản còn lại; hết bản thì mờ */
+.tray__item { position: relative; }
+.tray__item.is-out { opacity: 0.35; filter: grayscale(1); cursor: default; }
+.tray__badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  min-width: 20px;
+  padding: 2px 3px 0;
+  font: 16px/16px 'dearpix-2-01', monospace;
+  -webkit-font-smoothing: none;
+  color: #fff;
+  background: var(--c-accent);
+  pointer-events: none;
+}
 .tray--full .tray__list { opacity: 0.4; filter: grayscale(0.6); }
 .tray--full .tray__item { cursor: default; }
 .drop-in { animation: drop-in 480ms steps(4, end); }

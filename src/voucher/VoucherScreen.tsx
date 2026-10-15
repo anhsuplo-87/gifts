@@ -3,7 +3,7 @@
 //   Phần dưới: thẻ lời chúc → danh sách "Đã dán".
 // Tiết lộ dùng cùng khung. Chọn sticker → chế độ tập trung.
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { canPeel, PEEL_WINDOW_MS, type GiftRepo, type Item, type Voucher } from '../data/types.ts';
+import { canPeel, groupKey, PEEL_WINDOW_MS, type GiftRepo, type Item, type Voucher } from '../data/types.ts';
 import { Button, Dialog, IconButton, Toast } from '../ui/Kit.tsx';
 import { useReducedMotion } from '../ui/hooks.ts';
 import { commonImg } from '../ui/tokens.ts';
@@ -51,13 +51,29 @@ export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; vouche
   const timers = useRef<number[]>([]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
   const later = (fn: () => void, ms: number) => timers.current.push(window.setTimeout(fn, ms));
+  // Đã tiết lộ xong → hạ cờ, để khi admin reset tiết lộ thì màn tiết lộ chờ bạn bè chạm (không tự chạy lại)
+  useEffect(() => {
+    if (voucher.revealedAt) setRevealing(false);
+  }, [voucher.revealedAt]);
 
   const kind = layoutFor(voucher.slots);
   const L = LAYOUTS[kind];
   const unused = items.filter((i) => !i.used).sort((a, b) => a.order - b.order);
   const stuck = items.filter((i) => i.used).sort((a, b) => (b.usedAt?.getTime() ?? 0) - (a.usedAt?.getTime() ?? 0));
   const full = stuck.length >= voucher.slots;
-  const selectedItem = unused.find((i) => i.id === selected) ?? null;
+  // Bảng sticker gộp theo group (sticker ×N): mỗi nhóm một ô, đại diện = bản chưa dán có order nhỏ nhất.
+  // Nhóm nhiều bản đã dán hết vẫn hiện (mờ); sticker lẻ đã dán thì rời bảng như cũ.
+  const trayGroups = new Map<string, { key: string; all: Item[]; left: Item[] }>();
+  for (const it of [...items].sort((a, b) => a.order - b.order)) {
+    const k = groupKey(it);
+    const g = trayGroups.get(k) ?? { key: k, all: [], left: [] };
+    g.all.push(it);
+    if (!it.used) g.left.push(it);
+    trayGroups.set(k, g);
+  }
+  const tray = [...trayGroups.values()].filter((g) => g.left.length > 0 || g.all.length > 1);
+  // selected = khoá nhóm
+  const selectedItem = trayGroups.get(selected ?? '')?.left[0] ?? null;
 
   // sticker đã chọn mà bị dán / mất thì bỏ chọn
   useEffect(() => {
@@ -152,8 +168,9 @@ export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; vouche
   // ───────── Voucher ─────────
   const pick = (it: Item) => {
     if (full) return;
-    if (selected === it.id) return setSelected(null);
-    setSelected(it.id);
+    const k = groupKey(it);
+    if (selected === k) return setSelected(null);
+    setSelected(k);
     if (face === 'front') flipTo('back');
   };
 
@@ -223,21 +240,32 @@ export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; vouche
         {showTray && (
           <section class={`tray frame-tray focus-lift${full ? ' tray--full' : ''}`} aria-label="Bảng sticker">
             <ul class="tray__list" role="list">
-              {unused.map((it) => (
-                <li key={it.id}>
-                  <button
-                    type="button"
-                    class={`tray__item${it.id === selected ? ' is-selected' : ''}${it.id === dropped ? ' drop-in' : ''}`}
-                    style={{ width: `${traySize + 12}px`, height: `${traySize + 12}px` }}
-                    aria-pressed={it.id === selected}
-                    aria-label={`${it.title}${it.id === selected ? ' (đang chọn)' : ''}`}
-                    disabled={full}
-                    onClick={() => pick(it)}
-                  >
-                    <StickerImg item={it} theme={voucher.theme} kind={kind} box={traySize} unit="px" />
-                  </button>
-                </li>
-              ))}
+              {tray.map((g) => {
+                const it = g.left[0] ?? g.all[0];
+                const out = g.left.length === 0;
+                const isSel = g.key === selected;
+                const multi = g.all.length > 1;
+                return (
+                  <li key={g.key}>
+                    <button
+                      type="button"
+                      class={`tray__item${isSel ? ' is-selected' : ''}${out ? ' is-out' : ''}${dropped && g.all.some((c) => c.id === dropped) ? ' drop-in' : ''}`}
+                      style={{ width: `${traySize + 12}px`, height: `${traySize + 12}px` }}
+                      aria-pressed={isSel}
+                      aria-label={`${it.title}${multi ? `, còn ${g.left.length}` : ''}${isSel ? ' (đang chọn)' : ''}`}
+                      disabled={full || out}
+                      onClick={() => pick(it)}
+                    >
+                      <StickerImg item={it} theme={voucher.theme} kind={kind} box={traySize} unit="px" />
+                      {multi && (
+                        <span class="tray__badge" aria-hidden="true">
+                          ×{g.left.length}
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
             {/* Chiều cao cố định: tên 1 dòng + mô tả tối đa 2 dòng → chọn sticker không làm bố cục nhảy */}
             <div class="tray__info" aria-live="polite">
