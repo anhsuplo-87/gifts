@@ -2,7 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // UID admin — thay bằng UID thật trước khi deploy (xem README). Test tự thay bằng UID giả.
-    function adminUid() { return 'ADMIN_UID_PLACEHOLDER'; }
+    function adminUid() { return 'TUL5mPdyxigIsx1fGeWLnUU6rpg2'; }
 
     function signedIn() { return request.auth != null; }
     function isAdmin()  { return signedIn() && request.auth.uid == adminUid(); }

@@ -109,9 +109,10 @@ Rules trong emulator lấy từ `firestore.rules`, chỉ thay UID admin thành `
 
 - Rules ở `firestore.rules`, test ở `tests/rules/` (Vitest + `@firebase/rules-unit-testing`).
 - Chạy test cần **Java 21** và Firebase CLI (`npm i -g firebase-tools`). Project id tạm `demo-gifts`, chỉ chạy emulator.
-- **UID admin:** ở Cổng 3 sửa **hai chỗ** cho khớp nhau:
-  - `firestore.rules`: `function adminUid() { return 'ADMIN_UID_PLACEHOLDER'; }`
-  - `src/config.ts`: `ADMIN_UID_PROD = 'ADMIN_UID_PLACEHOLDER'`
+- **UID admin** (đã đặt ở Cổng 3) nằm ở **hai chỗ**, đổi thì sửa cả hai cho khớp:
+  - `firestore.rules`: `function adminUid() { return '<UID>'; }`
+  - `src/config.ts`: `ADMIN_UID_PROD = '<UID>'`
 
-  Lấy UID ở Firebase Console → Authentication → Users. Test và emulator tự thay UID giả nên không cần sửa.
-- **Không deploy rules** lên Firebase thật trước Cổng 3.
+  UID lấy ở Firebase Console → Authentication → Users. Test và emulator tự thay UID giả nên không cần sửa.
+- **Deploy rules + indexes** (thủ công, sau khi `npm run test:rules` xanh):
+  `firebase deploy --only firestore:rules,firestore:indexes --project gifts-anhsuplo`

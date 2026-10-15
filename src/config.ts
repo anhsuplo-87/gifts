@@ -30,6 +30,6 @@ export const EMULATOR_PROJECT_ID = 'demo-gifts';
  * UID của admin (Bá Lương). Thay bằng UID thật ở Cổng 3 — cùng lúc với dòng adminUid() trong
  * firestore.rules. Trên emulator dùng UID giả 'admin-test' (scripts/seed-emulator.mjs tạo sẵn).
  */
-export const ADMIN_UID_PROD = 'ADMIN_UID_PLACEHOLDER';
+export const ADMIN_UID_PROD = 'TUL5mPdyxigIsx1fGeWLnUU6rpg2';
 export const ADMIN_UID_EMULATOR = 'admin-test';
 export const adminUid = () => (useEmulator() ? ADMIN_UID_EMULATOR : ADMIN_UID_PROD);
