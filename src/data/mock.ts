@@ -157,7 +157,7 @@ export class MockRepo implements GiftRepo {
       case 'empty':
         return { kind: 'noVoucher', email: EMAIL };
       case 'error':
-        return { kind: 'error', message: 'Không tải được quà (lỗi giả của chế độ ?mock=error).' };
+        return { kind: 'error', email: EMAIL, message: 'Không tải được quà (lỗi giả của chế độ ?mock=error).' };
       default:
         return {
           kind: 'ready',

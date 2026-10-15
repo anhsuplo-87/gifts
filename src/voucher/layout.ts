@@ -75,19 +75,29 @@ export function validateLayout(): string[] {
 export const PARALLAX = { bg: 0, deco: 1, content: 2, shine: 3 } as const;
 
 /**
- * Chuyển động (học từ harmonies + invitation):
- * - nghiêng 3D theo con trỏ / chạm-kéo, tối đa `tiltDeg` ở góc; chỉ resample khi ĐANG nghiêng,
- *   thả ra thì về phẳng trong `settleMs` và nằm lại đúng pixel;
- * - lật 3D `flipMs`, bấm thẻ thì "bong bóng" `bubbleMs`.
+ * Chuyển động (SPEC §4, học từ harmonies + invitation):
+ * - desktop: nghiêng 3D theo con trỏ, tối đa `tiltDeg` ở góc; thả ra về phẳng trong `settleMs`;
+ * - điện thoại: nghiêng theo độ nghiêng máy — dùng ĐỘ LỆCH so với tư thế gốc, tư thế gốc trôi theo máy
+ *   (hằng số `gyroBaseS`), nên cầm yên thì thẻ tự về phẳng; lệch dưới `gyroQuietDeg` trong `gyroQuietMs`
+ *   thì bỏ hẳn transform;
+ * - lật 3D `flipMs`, chạm thẻ thì "bong bóng" `bubbleMs`.
  */
 export const MOTION = {
   tiltDeg: 9,
   perspectivePx: 620,
-  /** Kéo bao nhiêu px CSS thì đạt mức nghiêng tối đa (điện thoại) */
-  dragRangePx: 120,
   settleMs: 120,
   flipMs: 700,
   bubbleMs: 420,
+  /** Con quay: làm mượt tín hiệu (s), tư thế gốc trôi theo máy (s) */
+  gyroSmoothS: 0.08,
+  gyroBaseS: 0.8,
+  /** Lệch bao nhiêu độ so với tư thế gốc thì đạt nghiêng tối đa */
+  gyroRangeDeg: 12,
+  /** Máy đứng yên (tốc độ < gyroStillDegPerS) trong gyroQuietMs → tư thế gốc bắt kịp, về phẳng, bỏ transform;
+   *  độ lệch dưới gyroQuietDeg trong gyroQuietMs → về phẳng */
+  gyroQuietDeg: 0.8,
+  gyroStillDegPerS: 6,
+  gyroQuietMs: 600,
 } as const;
 
 /** Sticker trong bảng: phóng nguyên lần sao cho cạnh ≥ 48px CSS (SPEC §8) */

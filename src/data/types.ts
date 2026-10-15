@@ -29,7 +29,7 @@ export type ViewState =
   | { kind: 'loading' }
   | { kind: 'signedOut' }
   | { kind: 'noVoucher'; email: string }
-  | { kind: 'error'; message: string }
+  | { kind: 'error'; message: string; email?: string }
   | { kind: 'ready'; email: string; voucher: Voucher; items: Item[] };
 
 export interface GiftRepo {

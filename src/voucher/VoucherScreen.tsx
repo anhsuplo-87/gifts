@@ -1,14 +1,18 @@
-// Màn voucher của bạn bè: tiết lộ → voucher + bảng sticker + lời nhắn; dán / bóc sticker (SPEC §2.1, §4).
+// Màn voucher của bạn bè (SPEC §2.1 — bố cục 2 phần):
+//   Phần trên = 1 màn hình: thẻ ở giữa + chữ phụ "Chạm thẻ để lật" + bảng sticker + dòng mô tả cố định.
+//   Phần dưới: thẻ lời chúc → danh sách "Đã dán".
+// Tiết lộ dùng cùng khung. Chọn sticker → chế độ tập trung.
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { canPeel, PEEL_WINDOW_MS, type GiftRepo, type Item, type Voucher } from '../data/types.ts';
-import { Button, Dialog, Toast } from '../ui/Kit.tsx';
+import { Button, Dialog, IconButton, Toast } from '../ui/Kit.tsx';
 import { useReducedMotion } from '../ui/hooks.ts';
+import { commonImg } from '../ui/tokens.ts';
 import { LAYOUTS, TRAY_MIN_CSS, layoutFor } from './layout.ts';
 import { RevealOverlay } from './Reveal.tsx';
 import { StickerImg } from './Sticker.tsx';
-import { VoucherCard, readFx, type Face } from './Voucher.tsx';
+import { requestTiltPermission } from './tilt.ts';
+import { VoucherCard, type Face } from './Voucher.tsx';
 
-const FLIP_HALF = 150; // ?fx=pixel: ms mỗi nửa cú lật 2D (tổng ~300ms)
 /** Rung nhẹ (Android; iOS bỏ qua) */
 const buzz = (ms: number) => {
   try {
@@ -20,13 +24,22 @@ const buzz = (ms: number) => {
 const fmtTime = (d: Date) =>
   d.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
 const fmtDate = (d: Date) => d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+const fmtDayMonth = (d: Date) => d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+
+/** Mũi tên gợi ý cuộn xuống phần dưới */
+function ScrollHint({ target }: { target: () => HTMLElement | null }) {
+  return (
+    <button type="button" class="scroll-hint" aria-label="Cuộn xuống xem lời chúc" onClick={() => target()?.scrollIntoView({ behavior: 'smooth' })}>
+      <img src={commonImg('iconScroll')} alt="" />
+    </button>
+  );
+}
 
 export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; voucher: Voucher; items: Item[] }) {
   const reducedMotion = useReducedMotion();
-  const fx = useRef(readFx()).current;
   const stageWrap = useRef<HTMLDivElement>(null);
+  const bottom = useRef<HTMLElement>(null);
   const [face, setFace] = useState<Face>('front');
-  const [flipPhase, setFlipPhase] = useState<'out' | 'in' | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<{ item: Item; slot: number } | null>(null);
   const [detail, setDetail] = useState<Item | null>(null);
@@ -40,9 +53,10 @@ export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; vouche
   const later = (fn: () => void, ms: number) => timers.current.push(window.setTimeout(fn, ms));
 
   const kind = layoutFor(voucher.slots);
+  const L = LAYOUTS[kind];
   const unused = items.filter((i) => !i.used).sort((a, b) => a.order - b.order);
-  const usedCount = items.filter((i) => i.used).length;
-  const full = usedCount >= voucher.slots;
+  const stuck = items.filter((i) => i.used).sort((a, b) => (b.usedAt?.getTime() ?? 0) - (a.usedAt?.getTime() ?? 0));
+  const full = stuck.length >= voucher.slots;
   const selectedItem = unused.find((i) => i.id === selected) ?? null;
 
   // sticker đã chọn mà bị dán / mất thì bỏ chọn
@@ -50,7 +64,7 @@ export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; vouche
     if (selected && !selectedItem) setSelected(null);
   }, [selected, selectedItem]);
 
-  /** Chế độ tập trung: đang chọn sticker để dán → nền mờ, thẻ đứng yên, chỉ voucher + bảng nổi lên */
+  /** Chế độ tập trung: đang chọn sticker → nền mờ, thẻ đứng yên, chỉ voucher + bảng nổi lên */
   const focus = !!selectedItem && !full;
   useEffect(() => {
     if (!focus) return;
@@ -63,17 +77,14 @@ export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; vouche
   }, [focus, confirm]);
 
   const flipTo = (target: Face) => {
-    if (target === face || flipPhase) return;
+    if (target === face) return;
     if (!reducedMotion) buzz(12);
-    if (reducedMotion || fx === 'smooth') return setFace(target);
-    setFlipPhase('out');
-    later(() => {
-      setFace(target);
-      setFlipPhase('in');
-      later(() => setFlipPhase(null), FLIP_HALF);
-    }, FLIP_HALF);
+    setFace(target);
   };
-  const flip = () => flipTo(face === 'front' ? 'back' : 'front');
+  const flip = () => {
+    requestTiltPermission(); // iOS: xin quyền nghiêng trong cú chạm thẻ đầu tiên
+    flipTo(face === 'front' ? 'back' : 'front');
+  };
 
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
@@ -88,39 +99,43 @@ export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; vouche
     }
   };
 
-  // ───────── Tiết lộ ─────────
+  // ───────── Tiết lộ (cùng khung phần trên) ─────────
   if (!voucher.revealedAt) {
     const start = () => {
+      requestTiltPermission();
       if (revealing) return;
       if (reducedMotion) return void run(() => repo.reveal());
       setRevealing(true);
     };
     return (
       <main class="voucher-screen">
-        <VoucherCard
-          voucher={voucher}
-          items={items}
-          face="front"
-          fx={fx}
-          reducedMotion={reducedMotion}
-          focus={false}
-          poppedId={null}
-          onTap={start}
-          onCell={() => {}}
-          onStuck={() => {}}
-          overlay={
-            <RevealOverlay
-              go={revealing}
-              onDone={async () => {
-                const ok = await run(() => repo.reveal());
-                if (!ok) setRevealing(false);
-              }}
+        <section class="vs-top">
+          <div class="vs-stage">
+            <VoucherCard
+              voucher={voucher}
+              items={items}
+              face="front"
+              reducedMotion={reducedMotion}
+              focus={false}
+              poppedId={null}
+              onTap={start}
+              onCell={() => {}}
+              onStuck={() => {}}
+              overlay={
+                <RevealOverlay
+                  go={revealing}
+                  onDone={async () => {
+                    const ok = await run(() => repo.reveal());
+                    if (!ok) setRevealing(false);
+                  }}
+                />
+              }
             />
-          }
-        />
-        <button type="button" class="reveal-cta" onClick={start} disabled={revealing || busy}>
-          {voucher.revealText}
-        </button>
+            <button type="button" class="stage-hint stage-hint--reveal" onClick={start} disabled={revealing || busy}>
+              {voucher.revealText}
+            </button>
+          </div>
+        </section>
         {toast && <Toast text={toast} onDone={() => setToast(null)} />}
       </main>
     );
@@ -168,81 +183,120 @@ export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; vouche
     }
   };
 
-  const L = LAYOUTS[kind];
   const trayScale = Math.max(1, Math.ceil(TRAY_MIN_CSS / L.sticker));
   const traySize = L.sticker * trayScale;
   const expired = voucher.expiresAt && voucher.expiresAt.getTime() < Date.now();
+  const showTray = unused.length > 0 || full;
 
   return (
     <main class={`voucher-screen${focus ? ' is-focus' : ''}`}>
       {focus && <div class="focus-backdrop" aria-hidden="true" onClick={() => setSelected(null)} />}
-      <div class="focus-lift" ref={stageWrap}>
-        <VoucherCard
-          voucher={voucher}
-          items={items}
-          face={face}
-          fx={fx}
-          flipPhase={flipPhase}
-          reducedMotion={reducedMotion}
-          focus={focus && face === 'back'}
-          poppedId={popped}
-          onTap={focus ? () => {} : flip}
-          onCell={onCell}
-          onStuck={(it) => setDetail(it)}
-        />
-      </div>
 
-      <div class="voucher-actions">
-        <Button variant="secondary" small icon="iconFlip" onClick={flip} label={face === 'front' ? 'Lật sang mặt sau' : 'Lật sang mặt trước'}>
-          Lật
-        </Button>
-      </div>
-
-      <section class={`tray frame-tray focus-lift${full ? ' tray--full' : ''}`} aria-label="Bảng sticker">
-        {full ? (
-          <p class="pt tray__done">{kind === 'single' ? 'Đã chọn xong món quà 🎉' : 'Đã dán đủ ô 🎉'}</p>
-        ) : unused.length === 0 ? (
-          <p class="pt tray__done">Hết sticker rồi</p>
-        ) : (
-          <p class="tray__hint">{selectedItem ? 'Chạm vào một ô trống trên voucher để dán' : 'Chạm một sticker để chọn, rồi chạm ô trống để dán'}</p>
-        )}
-        <ul class="tray__list" role="list">
-          {unused.map((it) => (
-            <li key={it.id}>
-              <button
-                type="button"
-                class={`tray__item${it.id === selected ? ' is-selected' : ''}${it.id === dropped ? ' drop-in' : ''}`}
-                style={{ width: `${traySize + 16}px`, height: `${traySize + 16}px` }}
-                aria-pressed={it.id === selected}
-                aria-label={`${it.title}${it.id === selected ? ' (đang chọn)' : ''}`}
-                disabled={full}
-                onClick={() => pick(it)}
-              >
-                <StickerImg item={it} theme={voucher.theme} kind={kind} box={traySize} unit="px" />
-              </button>
-            </li>
-          ))}
-        </ul>
-        {selectedItem && (
-          <div class="tray__info" aria-live="polite">
-            <p class="pt">{selectedItem.title}</p>
-            <p>{selectedItem.description}</p>
-            <div class="tray__cancel">
-              <Button variant="secondary" small icon="iconClose" onClick={() => setSelected(null)}>
-                Thôi
-              </Button>
-            </div>
+      {/* ── Phần trên: đúng 1 màn hình ── */}
+      <section class="vs-top">
+        <div class="vs-stage focus-lift" ref={stageWrap}>
+          <VoucherCard
+            voucher={voucher}
+            items={items}
+            face={face}
+            reducedMotion={reducedMotion}
+            focus={focus && face === 'back'}
+            poppedId={popped}
+            onTap={focus ? () => {} : flip}
+            onCell={onCell}
+            onStuck={(it) => setDetail(it)}
+          />
+          <div class="stage-hint">
+            <span>Chạm thẻ để lật</span>
+            <IconButton icon="iconFlip" label={face === 'front' ? 'Lật sang mặt sau' : 'Lật sang mặt trước'} onClick={flip} faint />
           </div>
+        </div>
+
+        {showTray && (
+          <section class={`tray frame-tray focus-lift${full ? ' tray--full' : ''}`} aria-label="Bảng sticker">
+            <ul class="tray__list" role="list">
+              {unused.map((it) => (
+                <li key={it.id}>
+                  <button
+                    type="button"
+                    class={`tray__item${it.id === selected ? ' is-selected' : ''}${it.id === dropped ? ' drop-in' : ''}`}
+                    style={{ width: `${traySize + 12}px`, height: `${traySize + 12}px` }}
+                    aria-pressed={it.id === selected}
+                    aria-label={`${it.title}${it.id === selected ? ' (đang chọn)' : ''}`}
+                    disabled={full}
+                    onClick={() => pick(it)}
+                  >
+                    <StickerImg item={it} theme={voucher.theme} kind={kind} box={traySize} unit="px" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {/* Chiều cao cố định: tên 1 dòng + mô tả tối đa 2 dòng → chọn sticker không làm bố cục nhảy */}
+            <div class="tray__info" aria-live="polite">
+              {full ? (
+                <>
+                  <p class="pt1 tray__title">{kind === 'single' ? 'Đã chọn xong món quà 🎉' : 'Đã dán đủ ô 🎉'}</p>
+                  <p class="tray__desc">Kéo xuống để xem lại những gì đã dán.</p>
+                </>
+              ) : selectedItem ? (
+                <>
+                  <p class="pt1 tray__title">{selectedItem.title}</p>
+                  <p class="tray__desc">{selectedItem.description}</p>
+                  {/* nằm trong vùng chiều cao cố định → không làm bố cục nhảy */}
+                  <span class="tray__cancel">
+                    <IconButton icon="iconClose" label="Thôi, bỏ chọn sticker" onClick={() => setSelected(null)} />
+                  </span>
+                </>
+              ) : (
+                <>
+                  <p class="pt1 tray__title tray__title--muted">Bảng sticker</p>
+                  <p class="tray__desc">Chạm một sticker để chọn, rồi chạm ô trống trên thẻ để dán.</p>
+                </>
+              )}
+            </div>
+          </section>
         )}
+
+        <ScrollHint target={() => bottom.current} />
       </section>
 
-      <article class="note frame-tray">
-        <p>{voucher.message}</p>
-        <p class="note__sign">— {voucher.giverName}</p>
-        {voucher.expiresAt && (
-          <p class="note__exp">{expired ? 'Đã quá hạn, nhưng Bá Lương dễ tính 😉' : `Hạn dùng: ${fmtDate(voucher.expiresAt)}`}</p>
-        )}
-      </article>
+      {/* ── Phần dưới: lời chúc → "Đã dán" ── */}
+      <section class="vs-bottom" ref={bottom}>
+        <article class="note frame-tray">
+          <p>{voucher.message}</p>
+          <p class="note__sign">— {voucher.giverName}</p>
+          {voucher.expiresAt && (
+            <p class="note__exp">{expired ? 'Đã quá hạn, nhưng Bá Lương dễ tính 😉' : `Hạn dùng: ${fmtDate(voucher.expiresAt)}`}</p>
+          )}
+        </article>
+
+        <section class="stuck frame-tray" aria-labelledby="stuck-h">
+          <h2 class="pt1" id="stuck-h">
+            {kind === 'single' ? 'Món đã chọn' : 'Đã dán'}
+          </h2>
+          {stuck.length === 0 ? (
+            <p class="stuck__empty">
+              {kind === 'single' ? 'Chưa chọn món nào — cứ thong thả nha.' : 'Chưa dán sticker nào — chọn một cái ở trên rồi chạm ô trống nha.'}
+            </p>
+          ) : (
+            <ul class="stuck__list" role="list">
+              {stuck.map((it) => (
+                <li key={it.id}>
+                  <button type="button" class="stuck__row" onClick={() => setDetail(it)}>
+                    <span class="stuck__img">
+                      <StickerImg item={it} theme={voucher.theme} kind={kind} box={L.sticker} unit="px" />
+                    </span>
+                    <span class="stuck__text">
+                      <span class="stuck__name">{it.title}</span>
+                      {it.usedAt && <span class="stuck__date">dán ngày {fmtDayMonth(it.usedAt)}</span>}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </section>
 
       {confirm && (
         <Dialog
@@ -289,15 +343,13 @@ export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; vouche
         >
           <div class="detail">
             <StickerImg item={detail} theme={voucher.theme} kind={kind} box={L.sticker * 2} unit="px" />
-            <div>
-              <p>{detail.description}</p>
-              {detail.usedAt && <p class="muted">Dán lúc {fmtTime(detail.usedAt)}</p>}
-              <p class="muted">
-                {canPeel(detail)
-                  ? `Còn bóc ra được trong khoảng ${Math.max(1, Math.ceil((detail.usedAt!.getTime() + PEEL_WINDOW_MS - Date.now()) / 3600000))} giờ nữa.`
-                  : 'Đã quá 24 giờ nên không bóc ra được nữa.'}
-              </p>
-            </div>
+            <p>{detail.description}</p>
+            {detail.usedAt && <p class="muted">Dán lúc {fmtTime(detail.usedAt)}</p>}
+            <p class="muted">
+              {canPeel(detail)
+                ? `Còn bóc ra được trong khoảng ${Math.max(1, Math.ceil((detail.usedAt!.getTime() + PEEL_WINDOW_MS - Date.now()) / 3600000))} giờ nữa.`
+                : 'Đã quá 24 giờ nên không bóc ra được nữa.'}
+            </p>
           </div>
         </Dialog>
       )}

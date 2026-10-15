@@ -1,4 +1,4 @@
-// Nút, hộp thoại, thông báo nhỏ — khung 9-slice lấy từ manifest asset.
+// UI chrome (SPEC §7): nút, nút icon, hộp thoại, thông báo nhỏ — dearpix ×1, khung 9-slice viền pixel 2px.
 import type { ComponentChildren } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 import type { COMMON_ASSETS } from '../voucher/assets.ts';
@@ -17,21 +17,21 @@ export function Button(props: {
   disabled?: boolean;
   children: ComponentChildren;
   label?: string;
-  small?: boolean;
-  /** Ẩn chữ ở màn hẹp, chỉ còn icon (chữ vẫn đọc được bằng trình đọc màn hình) */
-  compact?: boolean;
 }) {
-  const { variant = 'primary', icon, onClick, disabled, children, label, small, compact } = props;
+  const { variant = 'primary', icon, onClick, disabled, children, label } = props;
   return (
-    <button
-      type="button"
-      class={`pbtn pbtn--${variant}${small ? ' pbtn--small' : ''}${compact ? ' pbtn--compact' : ''}`}
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={label}
-    >
+    <button type="button" class={`pbtn pbtn--${variant}`} onClick={onClick} disabled={disabled} aria-label={label}>
       {icon && <Icon name={icon} />}
-      <span class="pt">{children}</span>
+      <span class="pt1">{children}</span>
+    </button>
+  );
+}
+
+/** Nút chỉ có icon, không khung (header, nút lật nhỏ dưới thẻ) */
+export function IconButton(props: { icon: IconKey; label: string; onClick: () => void; faint?: boolean }) {
+  return (
+    <button type="button" class={`icon-btn${props.faint ? ' icon-btn--faint' : ''}`} aria-label={props.label} title={props.label} onClick={props.onClick}>
+      <Icon name={props.icon} />
     </button>
   );
 }
@@ -63,7 +63,7 @@ export function Dialog(props: { title: ComponentChildren; children?: ComponentCh
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && props.onClose()}>
       <div class="dialog frame-dialog" role="dialog" aria-modal="true" aria-labelledby={props.labelId} ref={box}>
-        <h2 class="pt dialog__title" id={props.labelId}>
+        <h2 class="pt1 dialog__title" id={props.labelId}>
           {props.title}
         </h2>
         {props.children && <div class="dialog__body">{props.children}</div>}

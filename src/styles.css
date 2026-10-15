@@ -1,5 +1,5 @@
 /* Font pixel: dearpix-2-01, cỡ gốc 16. Ép khung chữ đúng 16 pixel gốc (chân chữ ở pixel 13)
-   để đường chân chữ luôn rơi vào số nguyên pixel → không nhoè ở mọi --px. */
+   để đường chân chữ luôn rơi vào số nguyên pixel → không nhoè. */
 @font-face {
   font-family: 'dearpix-2-01';
   src: url('/fonts/dearpix-2-01/dearpix-2-01.otf') format('opentype');
@@ -12,12 +12,22 @@
 :root {
   --px: 2px; /* JS đặt lại theo computePx() trong layout.ts */
   --c-bg: #f6efdc;
+  --c-ink: #3a2e2a;
+  --chrome-ink: #2b2233;
+  --chrome-muted: #5a5060;
+  --header-h: 44px;
   color-scheme: light;
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; }
+/* Nền cố định (SPEC §3): html cùng màu nền, không kéo quá đà */
+html {
+  background-color: var(--c-bg);
+  overscroll-behavior: none;
+}
 body {
+  margin: 0;
+  overscroll-behavior: none;
   font-family: 'Nunito', system-ui, sans-serif;
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
@@ -27,29 +37,13 @@ body {
 img, canvas { image-rendering: pixelated; }
 button { font: inherit; color: inherit; }
 h1, h2, p { margin: 0; }
+:focus-visible { outline: 2px solid var(--c-pop, #ffc94d); outline-offset: 2px; }
 
-/* ───────── Khung app theo theme ───────── */
-.app {
-  min-height: 100dvh;
-  background-color: var(--c-bg);
-  background-image: var(--img-bg-tile);
-  background-size: calc(32 * var(--px));
-  color: var(--c-ink);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 16px calc(24 * var(--px) / 2);
-}
-:focus-visible {
-  outline: calc(1 * var(--px)) solid var(--c-pop);
-  outline-offset: calc(1 * var(--px));
-}
-
-/* Chữ pixel: luôn 16 × --px, line-height 16 pixel gốc, căn trái (căn giữa có thể lệch nửa pixel) */
-.pt {
+/* ───────── Chữ pixel ─────────
+   .pt  = trên thẻ: 16 × --px (cùng lưới với hình), căn trái
+   .pt1 = UI chrome: dearpix ×1 (16px);  .pt2 = tiêu đề màn đăng nhập ×2 (32px) */
+.pt, .pt1, .pt2 {
   font-family: 'dearpix-2-01', monospace;
-  font-size: calc(16 * var(--px));
-  line-height: calc(16 * var(--px));
   font-weight: 400;
   -webkit-font-smoothing: none;
   font-smooth: never;
@@ -58,19 +52,45 @@ h1, h2, p { margin: 0; }
   text-rendering: optimizeSpeed;
   letter-spacing: 0;
 }
+.pt { font-size: calc(16 * var(--px)); line-height: calc(16 * var(--px)); }
+.pt1 { font-size: 16px; line-height: 16px; }
+.pt2 { font-size: 32px; line-height: 32px; }
 
-/* ───────── Header ───────── */
+/* ───────── Khung app + nền cố định ───────── */
+.app {
+  position: relative;
+  isolation: isolate;
+  min-height: 100svh;
+  color: var(--c-ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 16px;
+}
+.app-bg {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 100lvh; /* thanh địa chỉ iOS co giãn không làm nền giật */
+  z-index: -1;
+  background-color: var(--c-bg);
+  background-image: var(--img-bg-tile);
+  background-size: calc(32 * var(--px));
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+/* ───────── Header gọn ───────── */
 .header {
   width: 100%;
   max-width: 720px;
+  height: var(--header-h);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 0;
+  gap: 8px;
 }
 .header__email {
-  font-size: 0.85rem;
+  font-size: 13px;
   color: var(--c-muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -78,72 +98,82 @@ h1, h2, p { margin: 0; }
   min-width: 0;
 }
 
-/* ───────── Nút 9-slice ───────── */
+/* ───────── Nút (9-slice 1:1, viền pixel 2px) ───────── */
 .pbtn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: calc(4 * var(--px));
-  min-height: 44px;
-  min-width: 44px;
-  padding: 0 calc(2 * var(--px));
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px;
   border-style: solid;
-  border-width: calc(4 * var(--px));
-  border-image: var(--img-btn-primary) var(--slice-btn-primary) fill / calc(var(--slice-btn-primary) * var(--px)) stretch;
+  border-width: calc(var(--slice-btn-primary) * 1px);
+  border-image: var(--img-btn-primary) var(--slice-btn-primary) fill / calc(var(--slice-btn-primary) * 1px) stretch;
   image-rendering: pixelated;
   background: none;
   color: #fff;
   cursor: pointer;
+  white-space: nowrap;
 }
-.pbtn .pt { line-height: calc(16 * var(--px)); }
-.pbtn:active:not(:disabled) {
-  border-image-source: var(--img-btn-primary-pressed);
-  transform: translateY(var(--px));
-}
-.pbtn--secondary { border-image-source: var(--img-btn-secondary); color: #2b2233; }
+/* vùng chạm ≥ 44px mà nút vẫn gọn */
+.pbtn::after { content: ''; position: absolute; inset: -6px -2px; }
+.pbtn:active:not(:disabled) { border-image-source: var(--img-btn-primary-pressed); transform: translateY(1px); }
+.pbtn--secondary { height: 28px; padding: 0 8px; border-image-source: var(--img-btn-secondary); color: var(--chrome-ink); }
 .pbtn--secondary:active:not(:disabled) { border-image-source: var(--img-btn-secondary); }
 .pbtn:disabled { opacity: 0.6; cursor: default; }
-.pbtn--small { gap: calc(2 * var(--px)); }
-.pbtn .pt { white-space: nowrap; }
-@media (max-width: 479px) {
-  .pbtn--compact .pt {
-    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
-  }
+.icon { width: 16px; height: 16px; display: block; }
+
+/* Nút chỉ có icon, không khung */
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
 }
-.icon { width: calc(16 * var(--px)); height: calc(16 * var(--px)); display: block; }
+.icon-btn:hover { background: rgb(0 0 0 / 0.06); }
+.icon-btn--faint { opacity: 0.5; }
+[data-theme='gamer'] .app :is(.header, .stage-hint, .scroll-hint) img { filter: invert(0.92); }
 
 /* ───────── Khung 9-slice ───────── */
 .frame-dialog {
   border-style: solid;
-  border-width: calc(var(--slice-frame-dialog) * var(--px));
-  border-image: var(--img-frame-dialog) var(--slice-frame-dialog) fill / calc(var(--slice-frame-dialog) * var(--px)) stretch;
+  border-width: calc(var(--slice-frame-dialog) * 1px);
+  border-image: var(--img-frame-dialog) var(--slice-frame-dialog) fill / calc(var(--slice-frame-dialog) * 1px) stretch;
   image-rendering: pixelated;
+  color: var(--chrome-ink);
 }
 .frame-tray {
   border-style: solid;
-  border-width: calc(var(--slice-frame-tray) * var(--px));
-  border-image: var(--img-frame-tray) var(--slice-frame-tray) fill / calc(var(--slice-frame-tray) * var(--px)) stretch;
+  border-width: calc(var(--slice-frame-tray) * 1px);
+  border-image: var(--img-frame-tray) var(--slice-frame-tray) fill / calc(var(--slice-frame-tray) * 1px) stretch;
   image-rendering: pixelated;
-  color: #2b2233;
+  color: var(--chrome-ink);
 }
 
-/* ───────── Màn phụ ───────── */
+/* ───────── Màn đứng riêng: căn giữa ───────── */
 .screen {
   flex: 1;
   width: 100%;
-  max-width: 480px;
+  max-width: 420px;
+  min-height: calc(100svh - var(--header-h));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: calc(8 * var(--px));
+  gap: 12px;
   padding: 24px 0;
   text-align: center;
 }
-.screen h1 { text-align: left; }
-.lead { max-width: 34em; color: var(--c-ink); }
+.lead { max-width: 30em; font-size: 15px; }
+.lead--warn { color: #b3261e; font-weight: 700; }
 .art { display: block; }
-.ghost-voucher { position: relative; width: calc(160 * var(--px)); height: calc(90 * var(--px)); opacity: 0.55; }
+.ghost-voucher { position: relative; width: calc(160 * var(--px)); height: calc(90 * var(--px)); opacity: 0.5; margin-bottom: 8px; }
 .ghost-voucher img { position: absolute; inset: 0; width: 100%; height: 100%; }
 .ghost-voucher__q {
   inset: auto !important;
@@ -157,30 +187,109 @@ h1, h2, p { margin: 0; }
   padding: 8px 12px;
   background: var(--c-paper);
   border: 2px dashed var(--c-line);
-  font-size: 0.85rem;
+  font-size: 13px;
   overflow-wrap: anywhere;
   user-select: all;
 }
 
-/* ───────── Voucher ───────── */
+/* ───────── Màn voucher: 2 phần ───────── */
 .voucher-screen {
   width: 100%;
   max-width: 720px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: calc(6 * var(--px));
-  padding: calc(6 * var(--px)) 0 24px;
 }
-/* Cấu trúc: .voucher-stage (nghe con trỏ, nhấp nhô) > .vshadow + .voucher-bubble (nhấn/bong bóng)
-   > .voucher-lean (nghiêng 3D) > .voucher (lật) > .vface (mặt trước/sau) > các lớp */
+/* Phần trên: đúng 1 màn hình — thẻ ở giữa; có bảng sticker thì thẻ dịch lên, bảng nằm dưới */
+.vs-top {
+  width: 100%;
+  min-height: calc(100svh - var(--header-h));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0 0;
+}
+.vs-stage {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(4 * var(--px));
+}
+.stage-hint {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--c-muted);
+}
+.stage-hint--reveal {
+  border: 0;
+  background: none;
+  padding: 8px 12px;
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--c-ink);
+  text-align: center;
+  cursor: pointer;
+}
+.scroll-hint {
+  border: 0;
+  background: none;
+  padding: 4px 12px 8px;
+  cursor: pointer;
+  opacity: 0.55;
+  animation: nudge 1.6s steps(1, end) infinite;
+}
+.scroll-hint img { width: 32px; height: 32px; display: block; }
+@keyframes nudge { 50% { transform: translateY(2px); } }
+
+/* Phần dưới: lời chúc → "Đã dán" */
+.vs-bottom {
+  width: 100%;
+  max-width: calc(160 * var(--px));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0 32px;
+}
+.note { font-size: 16px; }
+.note__sign { text-align: right; font-weight: 700; margin-top: 6px; }
+.note__exp { font-size: 13px; color: var(--chrome-muted); margin-top: 4px; }
+.stuck h2 { margin-bottom: 8px; }
+.stuck__empty { font-size: 14px; color: var(--chrome-muted); }
+.stuck__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.stuck__row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.stuck__row:hover { background: rgb(0 0 0 / 0.04); }
+.stuck__img { width: 48px; height: 48px; flex: none; display: flex; align-items: center; justify-content: center; }
+.stuck__text { display: flex; flex-direction: column; min-width: 0; }
+.stuck__name { font-weight: 700; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stuck__date { font-size: 13px; color: var(--chrome-muted); }
+
+/* ───────── Voucher ─────────
+   .voucher-stage (nghe con trỏ, nhấp nhô) > .vshadow + .voucher-bubble (nhấn/bong bóng)
+   > .voucher-lean (nghiêng 3D) > .voucher (lật 3D) > .vface (mặt trước/sau) > các lớp */
 .voucher-stage {
   position: relative;
   flex: none;
   cursor: pointer;
-  touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 .voucher-bubble, .voucher-lean, .voucher, .vface { position: absolute; inset: 0; }
 .vlayer, .vcontent {
@@ -222,37 +331,27 @@ h1, h2, p { margin: 0; }
   50% { transform: translateY(calc(-1 * var(--px))); }
 }
 
-/* ── fx=smooth: nghiêng 3D + lật 3D + bong bóng (harmonies + invitation) ──
-   Chỉ biến dạng khi ĐANG nghiêng / đang lật; thả ra thì về phẳng trong --settle-ms và nằm lại
-   đúng pixel — không ai nhìn thấy một tấm thẻ đứng yên bị resample. */
-/* Đứng yên: KHÔNG có transform 3D nào (kể cả perspective) → không bị dựng 3D, chữ + hình nằm đúng pixel */
-.fx-smooth .voucher-lean {
-  transform-origin: 50% 50%;
-  transition: transform var(--settle-ms) ease;
-}
-.fx-smooth.tilting .voucher-lean {
-  transform: perspective(var(--persp)) rotateX(var(--tiltx, 0deg)) rotateY(var(--tilty, 0deg));
-}
-.fx-smooth.flipping .voucher-lean { transform: perspective(var(--persp)); transform-style: preserve-3d; }
-.fx-smooth .vlayer, .fx-smooth .vcontent { transition: transform var(--settle-ms) ease; }
-.fx-smooth.tilting .voucher-lean, .fx-smooth.tilting .vlayer, .fx-smooth.tilting .vcontent { transition: none; }
-/* Ảnh vẫn phóng kiểu pixel (nearest) TRƯỚC, rồi cả lớp mới được xoay (bilinear ở compositor).
-   Giống harmonies: canvas vẽ sẵn ở cỡ hiển thị rồi mới nghiêng → khối pixel to vẫn sắc, chỉ mép xoay hơi mềm.
-   (Đặt image-rendering:auto ở đây sẽ phóng ảnh 160×90 lên bằng bilinear → mờ cả thẻ.) */
-.fx-smooth.tilting .voucher-lean, .fx-smooth.flipping .voucher-lean { will-change: transform; }
+/* Nghiêng 3D (SPEC §4). Đứng yên: KHÔNG có transform 3D nào → đúng pixel.
+   Ảnh vẫn phóng kiểu pixel TRƯỚC, rồi cả lớp mới được xoay (bilinear ở compositor) — như harmonies. */
+.voucher-lean { transform-origin: 50% 50%; transition: transform var(--settle-ms) ease; }
+.tilting .voucher-lean { transform: perspective(var(--persp)) rotateX(var(--tiltx, 0deg)) rotateY(var(--tilty, 0deg)); }
+.vlayer, .vcontent { transition: transform var(--settle-ms) ease; }
+.tilting :is(.voucher-lean, .vlayer, .vcontent) { transition: none; }
+.tilting .voucher-lean, .flipping .voucher-lean { will-change: transform; }
 
 /* Lật 3D: chỉ quay trong lúc .flipping; đứng yên thì bỏ hết transform, chỉ hiện mặt đang xem */
-.fx-smooth.flipping .voucher { transform-style: preserve-3d; }
-.fx-smooth .vface { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-.fx-smooth:not(.flipping) .vface[aria-hidden='true'] { visibility: hidden; }
-.fx-smooth.flipping .vface--back { transform: rotateY(180deg); }
-.fx-smooth.flipping .voucher[data-face='back'] { animation: flip3d-back var(--flip-ms) cubic-bezier(0.22, 1, 0.36, 1) both; }
-.fx-smooth.flipping .voucher[data-face='front'] { animation: flip3d-front var(--flip-ms) cubic-bezier(0.22, 1, 0.36, 1) both; }
+.flipping .voucher-lean { transform: perspective(var(--persp)); transform-style: preserve-3d; }
+.flipping .voucher { transform-style: preserve-3d; }
+.vface { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.voucher-stage:not(.flipping) .vface[aria-hidden='true'] { visibility: hidden; }
+.flipping .vface--back { transform: rotateY(180deg); }
+.flipping .voucher[data-face='back'] { animation: flip3d-back var(--flip-ms) cubic-bezier(0.22, 1, 0.36, 1) both; }
+.flipping .voucher[data-face='front'] { animation: flip3d-front var(--flip-ms) cubic-bezier(0.22, 1, 0.36, 1) both; }
 @keyframes flip3d-back { from { transform: rotateY(0deg); } to { transform: rotateY(180deg); } }
 @keyframes flip3d-front { from { transform: rotateY(180deg); } to { transform: rotateY(360deg); } }
 
-/* Nhấn → co lại; thả → bong bóng co giãn */
-.fx-smooth .voucher-bubble { transition: scale 0.12s ease-out; }
+/* Chạm → co lại; thả → bong bóng co giãn */
+.voucher-bubble { transition: scale 0.12s ease-out; }
 .voucher-bubble.pressed { scale: 0.96; }
 .voucher-bubble.bubble { animation: bubble var(--bubble-ms) ease; }
 @keyframes bubble {
@@ -263,14 +362,7 @@ h1, h2, p { margin: 0; }
   100% { scale: 1; }
 }
 
-/* ── fx=pixel (bản cũ): lật 2D scaleX theo bước ── */
-.flip-out { animation: flip-out 150ms steps(3, end) forwards; }
-.flip-in { animation: flip-in 150ms steps(3, end) forwards; }
-@keyframes flip-out { from { transform: scaleX(1); } to { transform: scaleX(0); } }
-@keyframes flip-in { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-
-/* ── Chế độ tập trung: đang chọn sticker → nền mờ, voucher + bảng nổi lên, thẻ đứng yên ── */
-.focus-lift { display: flex; justify-content: center; width: 100%; }
+/* ── Chế độ tập trung: đang chọn sticker → nền mờ, thẻ + bảng nổi lên, thẻ đứng yên ── */
 .focus-backdrop {
   position: fixed;
   inset: 0;
@@ -280,8 +372,8 @@ h1, h2, p { margin: 0; }
 }
 @keyframes fade-in { from { opacity: 0; } }
 .voucher-screen.is-focus .focus-lift { position: relative; z-index: 11; }
+.voucher-screen.is-focus .vs-stage .stage-hint { visibility: hidden; }
 .voucher-stage.is-focus { cursor: default; }
-.tray.focus-lift { display: block; }
 
 /* Ô */
 .cell {
@@ -333,35 +425,23 @@ h1, h2, p { margin: 0; }
 .reveal-q { position: absolute; image-rendering: pixelated; }
 .blink { animation: blink 1s steps(1, end) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
-.reveal-cta {
-  border: 0;
-  background: none;
-  padding: 12px;
-  min-height: 44px;
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--c-ink);
-  cursor: pointer;
-}
-
-.voucher-actions { display: flex; gap: 8px; }
 
 /* ───────── Bảng sticker ───────── */
 .tray {
   width: 100%;
   max-width: calc(160 * var(--px));
   min-width: 0;
+  flex: none;
 }
-.tray__hint, .tray__done { margin-bottom: 4px; }
-.tray__hint { font-size: 0.85rem; color: #5a5060; }
 .tray__list {
   list-style: none;
   margin: 0;
-  padding: 8px 2px;
+  padding: 4px 2px;
   display: flex;
-  gap: 4px;
+  gap: 2px;
   overflow-x: auto;
   scroll-snap-type: x proximity;
+  scrollbar-width: thin;
 }
 .tray__list li { flex: none; scroll-snap-align: start; }
 .tray__item {
@@ -382,16 +462,28 @@ h1, h2, p { margin: 0; }
 .tray--full .tray__item { cursor: default; }
 .drop-in { animation: drop-in 480ms steps(4, end); }
 @keyframes drop-in { from { transform: translateY(-48px); } to { transform: translateY(0); } }
-.tray__info { padding-top: 4px; border-top: 2px dotted #d8ccb6; }
-.tray__cancel { margin-top: 6px; }
-.tray__info .pt { color: #c94a39; }
+/* Dòng mô tả: chiều cao CỐ ĐỊNH (tên 1 dòng + mô tả ≤ 2 dòng) → chọn sticker không làm bố cục nhảy */
+.tray__info {
+  position: relative;
+  height: 62px;
+  padding: 6px 36px 0 2px;
+  border-top: 2px dotted #d8ccb6;
+}
+.tray__title { color: #c94a39; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tray__title--muted { color: var(--chrome-muted); }
+.tray__desc {
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--chrome-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.tray__cancel { position: absolute; top: 2px; right: 0; }
 
-/* Lời nhắn */
-.note { width: 100%; max-width: calc(160 * var(--px)); }
-.note__sign { text-align: right; font-weight: 700; margin-top: 4px; }
-.note__exp { font-size: 0.85rem; color: #5a5060; margin-top: 4px; }
-
-/* ───────── Hộp thoại ───────── */
+/* ───────── Hộp thoại: căn giữa ───────── */
 .overlay {
   position: fixed;
   inset: 0;
@@ -404,19 +496,21 @@ h1, h2, p { margin: 0; }
 }
 .dialog {
   width: 100%;
-  max-width: 420px;
-  color: #2b2233;
+  max-width: 360px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  font-size: 15px;
 }
-.dialog__title { color: #2b2233; }
 .dialog__title .hl { color: #c94a39; }
-.dialog__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.dialog__body { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.dialog__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .warn-strong { font-weight: 800; color: #b3261e; }
-.detail { display: flex; gap: 12px; align-items: flex-start; }
-.detail .sticker { flex: none; }
-.muted { color: #5a5060; font-size: 0.9rem; }
+.detail { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.muted { color: var(--chrome-muted); font-size: 13px; }
 
 /* Thông báo nhỏ */
 .toast {
@@ -426,7 +520,9 @@ h1, h2, p { margin: 0; }
   transform: translateX(-50%);
   max-width: calc(100vw - 32px);
   z-index: 30;
+  font-size: 14px;
   font-weight: 700;
+  text-align: center;
 }
 
 /* Đang tải */

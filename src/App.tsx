@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'preact/hooks';
 import { isInAppBrowser } from './data/inapp.ts';
 import { MockRepo, readMockMode } from './data/mock.ts';
 import type { ViewState } from './data/types.ts';
-import { Button } from './ui/Kit.tsx';
+import { IconButton } from './ui/Kit.tsx';
 import { ModeBar } from './ui/ModeBar.tsx';
 import { EmptyScreen, ErrorScreen, InAppScreen, LoadingScreen, LoginScreen } from './ui/Screens.tsx';
 import { usePx } from './ui/hooks.ts';
@@ -57,18 +57,22 @@ function GiftApp() {
   else if (state.kind === 'error') body = <ErrorScreen message={state.message} onRetry={() => repo.retry()} />;
   else body = <VoucherScreen repo={repo} voucher={state.voucher} items={state.items} />;
 
-  const email = state.kind === 'ready' || state.kind === 'noVoucher' ? state.email : null;
+  const email = state.kind === 'ready' || state.kind === 'noVoucher' || state.kind === 'error' ? (state.email ?? null) : null;
+
+  // màu html trùng nền (thanh địa chỉ iOS / kéo quá đà không lộ màu khác)
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
   return (
     <div class="app" data-theme={theme}>
+      <div class="app-bg" aria-hidden="true" />
       {email && !inApp && (
         <header class="header">
           <span class="header__email" title={email}>
             {email}
           </span>
-          <Button variant="secondary" small compact icon="iconLogout" onClick={signOut}>
-            Đăng xuất
-          </Button>
+          <IconButton icon="iconLogout" label="Đăng xuất" onClick={signOut} />
         </header>
       )}
       {body}
