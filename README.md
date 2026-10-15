@@ -33,6 +33,16 @@ Có `?mock` trên URL thì góc phải dưới có thanh chọn chế độ.
 | `error` | Lỗi tải + thử lại |
 | `flaky` | Như `designer` nhưng khoảng 1/3 thao tác bị lỗi giả |
 
+### Hiệu ứng (`?fx=`)
+
+- Mặc định (`smooth`, học từ repo *harmonies* + *master-thesis-graduation-invitation*): thẻ nghiêng 3D theo
+  con trỏ / chạm-kéo (tối đa 9° ở góc), các lớp trượt mượt; lật 3D; bấm thẻ thì "bong bóng".
+  **Chỉ resample khi đang nghiêng / đang lật** — đứng yên thì thẻ phẳng, không còn transform, nằm đúng pixel.
+- `?fx=pixel`: bản cũ — lật 2D theo bước, lớp dịch làm tròn theo pixel gốc. Ghép được với `?mock=`, ví dụ `?mock=designer&fx=pixel`.
+- **Chế độ tập trung:** chọn sticker → nền mờ, thẻ lật ra mặt sau và đứng yên (không nghiêng, không nhấp nhô),
+  ô trống nhấp nháy. Thoát: chạm nền mờ, Esc, nút "Thôi", hoặc dán xong.
+- Thông số chuyển động: `MOTION` trong `src/voucher/layout.ts`.
+
 ## Kích thước & hình
 
 - Mọi kích thước voucher / ô / sticker / vùng chữ: `src/voucher/layout.ts` (đơn vị pixel gốc).

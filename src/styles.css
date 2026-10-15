@@ -172,16 +172,18 @@ h1, h2, p { margin: 0; }
   gap: calc(6 * var(--px));
   padding: calc(6 * var(--px)) 0 24px;
 }
-.voucher-stage { position: relative; flex: none; }
-.voucher {
-  position: absolute;
-  inset: 0;
+/* Cấu trúc: .voucher-stage (nghe con trỏ, nhấp nhô) > .vshadow + .voucher-bubble (nhấn/bong bóng)
+   > .voucher-lean (nghiêng 3D) > .voucher (lật) > .vface (mặt trước/sau) > các lớp */
+.voucher-stage {
+  position: relative;
+  flex: none;
   cursor: pointer;
   touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
 }
-.vlayer {
+.voucher-bubble, .voucher-lean, .voucher, .vface { position: absolute; inset: 0; }
+.vlayer, .vcontent {
   position: absolute;
   inset: 0;
   background-size: 100% 100%;
@@ -189,12 +191,18 @@ h1, h2, p { margin: 0; }
   image-rendering: pixelated;
   pointer-events: none;
 }
+.vcontent { pointer-events: auto; }
 .vshadow {
+  position: absolute;
+  inset: 0;
+  background-size: 100% 100%;
+  image-rendering: pixelated;
   transform: translate(calc(2 * var(--px)), calc(3 * var(--px)));
   filter: brightness(0);
   opacity: 0.22;
+  pointer-events: none;
 }
-.vface { position: absolute; inset: 0; }
+.vface[aria-hidden='true'], .vface[aria-hidden='true'] .vcontent { pointer-events: none; }
 .vtext {
   position: absolute;
   margin: 0;
@@ -206,18 +214,72 @@ h1, h2, p { margin: 0; }
 .vtext--title { white-space: normal; overflow-wrap: anywhere; }
 .vtext--muted { color: var(--c-muted); }
 
-/* Lật 2D: bóp scaleX 1→0 rồi 0→1, theo bước (SPEC §4) */
+/* Nhấp nhô ±1 pixel gốc (theo bước → luôn đúng lưới); dừng khi đang nghiêng */
+.idle { animation: idle 2.4s steps(1, end) infinite; }
+.idle.tilting { animation-play-state: paused; }
+@keyframes idle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(calc(-1 * var(--px))); }
+}
+
+/* ── fx=smooth: nghiêng 3D + lật 3D + bong bóng (harmonies + invitation) ──
+   Chỉ resample khi ĐANG nghiêng / đang lật; thả ra thì về phẳng trong --settle-ms và nằm lại
+   đúng pixel — không ai nhìn thấy một tấm thẻ đứng yên bị resample. */
+/* Đứng yên: KHÔNG có transform 3D nào (kể cả perspective) → không bị dựng 3D, chữ + hình nằm đúng pixel */
+.fx-smooth .voucher-lean {
+  transform-origin: 50% 50%;
+  transition: transform var(--settle-ms) ease;
+}
+.fx-smooth.tilting .voucher-lean {
+  transform: perspective(var(--persp)) rotateX(var(--tiltx, 0deg)) rotateY(var(--tilty, 0deg));
+}
+.fx-smooth.flipping .voucher-lean { transform: perspective(var(--persp)); transform-style: preserve-3d; }
+.fx-smooth .vlayer, .fx-smooth .vcontent { transition: transform var(--settle-ms) ease; }
+.fx-smooth.tilting .voucher-lean, .fx-smooth.tilting .vlayer, .fx-smooth.tilting .vcontent { transition: none; }
+.fx-smooth.tilting :is(.vlayer, img, canvas, .cell),
+.fx-smooth.flipping :is(.vlayer, img, canvas, .cell) { image-rendering: auto; }
+
+/* Lật 3D: chỉ quay trong lúc .flipping; đứng yên thì bỏ hết transform, chỉ hiện mặt đang xem */
+.fx-smooth.flipping .voucher { transform-style: preserve-3d; }
+.fx-smooth .vface { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.fx-smooth:not(.flipping) .vface[aria-hidden='true'] { visibility: hidden; }
+.fx-smooth.flipping .vface--back { transform: rotateY(180deg); }
+.fx-smooth.flipping .voucher[data-face='back'] { animation: flip3d-back var(--flip-ms) cubic-bezier(0.22, 1, 0.36, 1) both; }
+.fx-smooth.flipping .voucher[data-face='front'] { animation: flip3d-front var(--flip-ms) cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes flip3d-back { from { transform: rotateY(0deg); } to { transform: rotateY(180deg); } }
+@keyframes flip3d-front { from { transform: rotateY(180deg); } to { transform: rotateY(360deg); } }
+
+/* Nhấn → co lại; thả → bong bóng co giãn */
+.fx-smooth .voucher-bubble { transition: scale 0.12s ease-out; }
+.voucher-bubble.pressed { scale: 0.96; }
+.voucher-bubble.bubble { animation: bubble var(--bubble-ms) ease; }
+@keyframes bubble {
+  0% { scale: 0.96; }
+  20% { scale: 1.04 0.96; }
+  45% { scale: 0.97 1.04; }
+  70% { scale: 1.02 0.98; }
+  100% { scale: 1; }
+}
+
+/* ── fx=pixel (bản cũ): lật 2D scaleX theo bước ── */
 .flip-out { animation: flip-out 150ms steps(3, end) forwards; }
 .flip-in { animation: flip-in 150ms steps(3, end) forwards; }
 @keyframes flip-out { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 @keyframes flip-in { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
-/* Nhấp nhô ±1 pixel gốc */
-.idle { animation: idle 2.4s steps(1, end) infinite; }
-@keyframes idle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(calc(-1 * var(--px))); }
+/* ── Chế độ tập trung: đang chọn sticker → nền mờ, voucher + bảng nổi lên, thẻ đứng yên ── */
+.focus-lift { display: flex; justify-content: center; width: 100%; }
+.focus-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: rgb(12 9 20 / 0.6);
+  animation: fade-in 160ms ease-out;
 }
+@keyframes fade-in { from { opacity: 0; } }
+.voucher-screen.is-focus .focus-lift { position: relative; z-index: 11; }
+.voucher-stage.is-focus { cursor: default; }
+.tray.focus-lift { display: block; }
 
 /* Ô */
 .cell {
@@ -238,7 +300,7 @@ h1, h2, p { margin: 0; }
   position: absolute;
   inset: calc(-2 * var(--px));
 }
-.voucher--picking .cell--target { animation: cell-blink 0.8s steps(1, end) infinite; }
+.is-focus .cell--target { animation: cell-blink 0.8s steps(1, end) infinite; }
 @keyframes cell-blink { 50% { filter: brightness(1.15) saturate(1.4); } }
 .cell--shake { animation: shake 360ms steps(6, end); }
 @keyframes shake {
@@ -319,6 +381,7 @@ h1, h2, p { margin: 0; }
 .drop-in { animation: drop-in 480ms steps(4, end); }
 @keyframes drop-in { from { transform: translateY(-48px); } to { transform: translateY(0); } }
 .tray__info { padding-top: 4px; border-top: 2px dotted #d8ccb6; }
+.tray__cancel { margin-top: 6px; }
 .tray__info .pt { color: #c94a39; }
 
 /* Lời nhắn */

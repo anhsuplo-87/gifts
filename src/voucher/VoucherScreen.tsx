@@ -6,15 +6,25 @@ import { useReducedMotion } from '../ui/hooks.ts';
 import { LAYOUTS, TRAY_MIN_CSS, layoutFor } from './layout.ts';
 import { RevealOverlay } from './Reveal.tsx';
 import { StickerImg } from './Sticker.tsx';
-import { VoucherCard, type Face } from './Voucher.tsx';
+import { VoucherCard, readFx, type Face } from './Voucher.tsx';
 
-const FLIP_HALF = 150; // ms mỗi nửa cú lật (tổng ~300ms)
+const FLIP_HALF = 150; // ?fx=pixel: ms mỗi nửa cú lật 2D (tổng ~300ms)
+/** Rung nhẹ (Android; iOS bỏ qua) */
+const buzz = (ms: number) => {
+  try {
+    navigator.vibrate?.(ms);
+  } catch {
+    /* không hỗ trợ */
+  }
+};
 const fmtTime = (d: Date) =>
   d.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
 const fmtDate = (d: Date) => d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
 export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; voucher: Voucher; items: Item[] }) {
   const reducedMotion = useReducedMotion();
+  const fx = useRef(readFx()).current;
+  const stageWrap = useRef<HTMLDivElement>(null);
   const [face, setFace] = useState<Face>('front');
   const [flipPhase, setFlipPhase] = useState<'out' | 'in' | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -40,9 +50,22 @@ export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; vouche
     if (selected && !selectedItem) setSelected(null);
   }, [selected, selectedItem]);
 
+  /** Chế độ tập trung: đang chọn sticker để dán → nền mờ, thẻ đứng yên, chỉ voucher + bảng nổi lên */
+  const focus = !!selectedItem && !full;
+  useEffect(() => {
+    if (!focus) return;
+    stageWrap.current?.scrollIntoView({ block: 'nearest', behavior: reducedMotion ? 'auto' : 'smooth' });
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !confirm) setSelected(null);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [focus, confirm]);
+
   const flipTo = (target: Face) => {
     if (target === face || flipPhase) return;
-    if (reducedMotion) return setFace(target);
+    if (!reducedMotion) buzz(12);
+    if (reducedMotion || fx === 'smooth') return setFace(target);
     setFlipPhase('out');
     later(() => {
       setFace(target);
@@ -78,14 +101,13 @@ export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; vouche
           voucher={voucher}
           items={items}
           face="front"
-          flipPhase={null}
+          fx={fx}
           reducedMotion={reducedMotion}
-          picking={false}
+          focus={false}
           poppedId={null}
           onTap={start}
           onCell={() => {}}
           onStuck={() => {}}
-          interactive
           overlay={
             <RevealOverlay
               go={revealing}
@@ -128,6 +150,7 @@ export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; vouche
     if (ok) {
       setSelected(null);
       if (!reducedMotion) {
+        buzz(40);
         setPopped(item.id);
         later(() => setPopped(null), 600);
       }
@@ -151,19 +174,23 @@ export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; vouche
   const expired = voucher.expiresAt && voucher.expiresAt.getTime() < Date.now();
 
   return (
-    <main class="voucher-screen">
-      <VoucherCard
-        voucher={voucher}
-        items={items}
-        face={face}
-        flipPhase={flipPhase}
-        reducedMotion={reducedMotion}
-        picking={!!selectedItem && face === 'back'}
-        poppedId={popped}
-        onTap={flip}
-        onCell={onCell}
-        onStuck={(it) => setDetail(it)}
-      />
+    <main class={`voucher-screen${focus ? ' is-focus' : ''}`}>
+      {focus && <div class="focus-backdrop" aria-hidden="true" onClick={() => setSelected(null)} />}
+      <div class="focus-lift" ref={stageWrap}>
+        <VoucherCard
+          voucher={voucher}
+          items={items}
+          face={face}
+          fx={fx}
+          flipPhase={flipPhase}
+          reducedMotion={reducedMotion}
+          focus={focus && face === 'back'}
+          poppedId={popped}
+          onTap={focus ? () => {} : flip}
+          onCell={onCell}
+          onStuck={(it) => setDetail(it)}
+        />
+      </div>
 
       <div class="voucher-actions">
         <Button variant="secondary" small icon="iconFlip" onClick={flip} label={face === 'front' ? 'Lật sang mặt sau' : 'Lật sang mặt trước'}>
@@ -171,13 +198,13 @@ export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; vouche
         </Button>
       </div>
 
-      <section class={`tray frame-tray${full ? ' tray--full' : ''}`} aria-label="Bảng sticker">
+      <section class={`tray frame-tray focus-lift${full ? ' tray--full' : ''}`} aria-label="Bảng sticker">
         {full ? (
           <p class="pt tray__done">{kind === 'single' ? 'Đã chọn xong món quà 🎉' : 'Đã dán đủ ô 🎉'}</p>
         ) : unused.length === 0 ? (
           <p class="pt tray__done">Hết sticker rồi</p>
         ) : (
-          <p class="tray__hint">{selectedItem ? 'Giờ chạm vào một ô trống trên voucher' : 'Chạm một sticker để xem, rồi chạm ô trống để dán'}</p>
+          <p class="tray__hint">{selectedItem ? 'Chạm vào một ô trống trên voucher để dán' : 'Chạm một sticker để chọn, rồi chạm ô trống để dán'}</p>
         )}
         <ul class="tray__list" role="list">
           {unused.map((it) => (
@@ -200,6 +227,11 @@ export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; vouche
           <div class="tray__info" aria-live="polite">
             <p class="pt">{selectedItem.title}</p>
             <p>{selectedItem.description}</p>
+            <div class="tray__cancel">
+              <Button variant="secondary" small icon="iconClose" onClick={() => setSelected(null)}>
+                Thôi
+              </Button>
+            </div>
           </div>
         )}
       </section>

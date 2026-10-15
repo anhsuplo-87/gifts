@@ -74,6 +74,22 @@ export function validateLayout(): string[] {
 /** Parallax: độ dịch tối đa (pixel gốc) của từng lớp */
 export const PARALLAX = { bg: 0, deco: 1, content: 2, shine: 3 } as const;
 
+/**
+ * Chuyển động (học từ harmonies + invitation):
+ * - nghiêng 3D theo con trỏ / chạm-kéo, tối đa `tiltDeg` ở góc; chỉ resample khi ĐANG nghiêng,
+ *   thả ra thì về phẳng trong `settleMs` và nằm lại đúng pixel;
+ * - lật 3D `flipMs`, bấm thẻ thì "bong bóng" `bubbleMs`.
+ */
+export const MOTION = {
+  tiltDeg: 9,
+  perspectivePx: 620,
+  /** Kéo bao nhiêu px CSS thì đạt mức nghiêng tối đa (điện thoại) */
+  dragRangePx: 120,
+  settleMs: 120,
+  flipMs: 700,
+  bubbleMs: 420,
+} as const;
+
 /** Sticker trong bảng: phóng nguyên lần sao cho cạnh ≥ 48px CSS (SPEC §8) */
 export const TRAY_MIN_CSS = 48;
 
