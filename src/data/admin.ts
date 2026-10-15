@@ -184,7 +184,7 @@ export function watchRecent(cb: (r: RecentStick[]) => void, onError: (msg: strin
   return onSnapshot(
     query(collectionGroup(db(), 'items'), where('used', '==', true), orderBy('usedAt', 'desc'), limit(n)),
     (snap) => cb(snap.docs.map((d) => ({ email: d.ref.parent.parent?.id ?? '?', item: toItem(d.id, d.data(opts)) }))),
-    (e) => onError(e.code === 'failed-precondition' ? 'Thiếu index cho "Mới dán" (deploy firestore.indexes.json).' : 'Không tải được "Mới dán".'),
+    (e) => onError(e.code === 'failed-precondition' ? 'Index cho "Mới dán" chưa sẵn sàng — nếu vừa deploy thì Firebase đang tạo, đợi vài phút rồi tải lại trang.' : 'Không tải được "Mới dán".'),
   );
 }
 
