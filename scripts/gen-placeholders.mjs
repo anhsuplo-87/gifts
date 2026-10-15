@@ -185,6 +185,24 @@ const ICONS = {
     '................',
     '................',
   ],
+  scroll: [
+    '................',
+    '................',
+    '......kkkk......',
+    '......kwwk......',
+    '......kwwk......',
+    '......kwwk......',
+    '......kwwk......',
+    '......kwwk......',
+    '..kkkkkwwkkkkk..',
+    '...kwwwwwwwwk...',
+    '....kwwwwwwk....',
+    '.....kwwwwk.....',
+    '......kwwk......',
+    '.......kk.......',
+    '................',
+    '................',
+  ],
   close: [
     '................',
     '................',
@@ -305,45 +323,50 @@ const draw = {
       cv.rect(23, 23, 2, 2, P.bg2);
     }
   },
+  // Khung UI 1:1 (1 pixel ảnh = 1px CSS): viền mực 1px góc vạt + 1px viền trong
   'frame-dialog'(cv) {
     const { w, h } = cv;
-    cv.rect(2, 2, w - 4, h - 4, COMMON.paper);
-    cv.frame(1, 1, w - 2, h - 2, COMMON.ink);
-    cv.frame(0, 2, w, h - 4, COMMON.ink);
-    cv.frame(2, 0, w - 4, h, COMMON.ink);
-    cv.frame(3, 3, w - 6, h - 6, COMMON.line);
+    chromeBox(cv, COMMON.paper, COMMON.ink);
+    cv.frame(2, 2, w - 4, h - 4, COMMON.line);
   },
   'frame-tray'(cv) {
-    const { w, h } = cv;
-    cv.rect(1, 1, w - 2, h - 2, COMMON.paper + 'e6');
-    cv.frame(0, 1, w, h - 2, COMMON.ink);
-    cv.frame(1, 0, w - 2, h, COMMON.ink);
-    cv.set(1, 1, COMMON.ink);
-    cv.set(w - 2, 1, COMMON.ink);
-    cv.set(1, h - 2, COMMON.ink);
-    cv.set(w - 2, h - 2, COMMON.ink);
+    chromeBox(cv, COMMON.paper + 'eb', COMMON.ink);
   },
   'btn:primary'(cv) {
-    button(cv, COMMON.accent, COMMON.accentDark, '#ff9a88', false);
+    button(cv, COMMON.accent, COMMON.accentDark, '#ff9a88');
   },
   'btn:pressed'(cv) {
-    button(cv, COMMON.accentDark, COMMON.accentDark, COMMON.accentDark, true);
+    button(cv, COMMON.accentDark, COMMON.accentDark, COMMON.accentDark);
   },
   'btn:secondary'(cv) {
-    button(cv, COMMON.paper, COMMON.line, '#ffffff', false);
+    button(cv, COMMON.paper, COMMON.line, '#ffffff');
   },
-  'mascot-sad'(cv) {
-    cv.disc(16, 17, 12, COMMON.ink);
-    cv.disc(16, 17, 11, COMMON.pop);
-    cv.rect(10, 13, 3, 3, COMMON.ink);
-    cv.rect(19, 13, 3, 3, COMMON.ink);
-    // miệng buồn
-    cv.rect(12, 23, 8, 1, COMMON.ink);
-    cv.set(11, 24, COMMON.ink);
-    cv.set(20, 24, COMMON.ink);
-    // giọt nước mắt
-    cv.rect(10, 17, 2, 3, COMMON.accent2);
-    cv.set(10, 20, COMMON.accent2);
+  // Màn "chưa có quà": hộp quà mở, trống, có dấu "?"
+  'mascot-empty'(cv) {
+    cv.rect(6, 14, 20, 14, COMMON.paper);
+    cv.frame(6, 14, 20, 14, COMMON.ink);
+    cv.rect(7, 15, 18, 3, COMMON.line);
+    // nắp hở nghiêng
+    for (let i = 0; i < 12; i++) cv.rect(4 + i, 12 - Math.floor(i / 3), 1, 3, COMMON.accent);
+    cv.frame(4, 9, 13, 4, COMMON.ink);
+    // dấu ? trong hộp
+    cv.rect(14, 19, 4, 1, COMMON.accent2);
+    cv.rect(17, 20, 1, 2, COMMON.accent2);
+    cv.rect(15, 22, 2, 1, COMMON.accent2);
+    cv.rect(15, 25, 2, 1, COMMON.accent2);
+  },
+  // Màn lỗi: đám mây xám có tia sét
+  'mascot-error'(cv) {
+    cv.disc(11, 15, 6, COMMON.ink);
+    cv.disc(19, 13, 7, COMMON.ink);
+    cv.rect(6, 15, 20, 7, COMMON.ink);
+    cv.disc(11, 15, 5, '#c9c3cf');
+    cv.disc(19, 13, 6, '#c9c3cf');
+    cv.rect(7, 16, 18, 5, '#c9c3cf');
+    cv.rect(9, 17, 2, 2, COMMON.ink);
+    cv.rect(19, 17, 2, 2, COMMON.ink);
+    // tia sét
+    cv.bitmap(['..pp', '.pp.', 'pppp', '.pp.', 'pp..', 'p...'], { p: COMMON.pop }, 14, 22);
   },
   'browser-warning'(cv) {
     cv.rect(2, 5, 28, 22, COMMON.paper);
@@ -372,17 +395,22 @@ const draw = {
   },
 };
 
-function button(cv, fill, bottom, top, pressed) {
+/** Hộp 9-slice viền 1px, góc vạt 1px */
+function chromeBox(cv, fill, ink) {
   const { w, h } = cv;
   cv.rect(1, 1, w - 2, h - 2, fill);
-  if (!pressed) {
-    cv.rect(1, h - 3, w - 2, 2, bottom);
-    cv.rect(2, 1, w - 4, 1, top);
-  } else {
-    cv.rect(1, 1, w - 2, 1, bottom);
-  }
-  cv.frame(0, 1, w, h - 2, COMMON.ink);
-  cv.frame(1, 0, w - 2, h, COMMON.ink);
+  cv.rect(1, 0, w - 2, 1, ink);
+  cv.rect(1, h - 1, w - 2, 1, ink);
+  cv.rect(0, 1, 1, h - 2, ink);
+  cv.rect(w - 1, 1, 1, h - 2, ink);
+}
+
+/** Nút: viền 1px góc vạt + 1px vát sáng trên / tối dưới (slice 2) */
+function button(cv, fill, bottom, top) {
+  const { w, h } = cv;
+  chromeBox(cv, fill, COMMON.ink);
+  cv.rect(1, 1, w - 2, 1, top);
+  cv.rect(1, h - 2, w - 2, 1, bottom);
 }
 
 /** Hộp quà co giãn theo kích thước */
