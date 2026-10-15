@@ -223,7 +223,7 @@ h1, h2, p { margin: 0; }
 }
 
 /* ── fx=smooth: nghiêng 3D + lật 3D + bong bóng (harmonies + invitation) ──
-   Chỉ resample khi ĐANG nghiêng / đang lật; thả ra thì về phẳng trong --settle-ms và nằm lại
+   Chỉ biến dạng khi ĐANG nghiêng / đang lật; thả ra thì về phẳng trong --settle-ms và nằm lại
    đúng pixel — không ai nhìn thấy một tấm thẻ đứng yên bị resample. */
 /* Đứng yên: KHÔNG có transform 3D nào (kể cả perspective) → không bị dựng 3D, chữ + hình nằm đúng pixel */
 .fx-smooth .voucher-lean {
@@ -236,8 +236,10 @@ h1, h2, p { margin: 0; }
 .fx-smooth.flipping .voucher-lean { transform: perspective(var(--persp)); transform-style: preserve-3d; }
 .fx-smooth .vlayer, .fx-smooth .vcontent { transition: transform var(--settle-ms) ease; }
 .fx-smooth.tilting .voucher-lean, .fx-smooth.tilting .vlayer, .fx-smooth.tilting .vcontent { transition: none; }
-.fx-smooth.tilting :is(.vlayer, img, canvas, .cell),
-.fx-smooth.flipping :is(.vlayer, img, canvas, .cell) { image-rendering: auto; }
+/* Ảnh vẫn phóng kiểu pixel (nearest) TRƯỚC, rồi cả lớp mới được xoay (bilinear ở compositor).
+   Giống harmonies: canvas vẽ sẵn ở cỡ hiển thị rồi mới nghiêng → khối pixel to vẫn sắc, chỉ mép xoay hơi mềm.
+   (Đặt image-rendering:auto ở đây sẽ phóng ảnh 160×90 lên bằng bilinear → mờ cả thẻ.) */
+.fx-smooth.tilting .voucher-lean, .fx-smooth.flipping .voucher-lean { will-change: transform; }
 
 /* Lật 3D: chỉ quay trong lúc .flipping; đứng yên thì bỏ hết transform, chỉ hiện mặt đang xem */
 .fx-smooth.flipping .voucher { transform-style: preserve-3d; }
