@@ -81,18 +81,29 @@ Có `?mock` trên URL thì góc phải dưới có thanh chọn chế độ.
 ```
 npm run dev:emu
 ```
-Seed tạo 4 tài khoản Google giả (không có email thật):
+Seed tạo 6 tài khoản Google giả (không có email thật):
 
 | Email | Dữ liệu |
 |---|---|
 | `designer@test.local` | 8 ô, 6 sticker, 2 đã dán (1 cái dán 1 giờ trước → bóc được) |
 | `gamer@test.local` | 1 ô, 6 game |
 | `reveal@test.local` | Chưa tiết lộ |
+| `nhom@test.local` | 5 ô, sticker có số lượng: "Bộ Font Family" ×3 (đã dán 1) + 2 sticker lẻ |
+| `moi@test.local` | Chưa có voucher — để admin tạo thử rồi đăng nhập kiểm tra |
 | `admin@test.local` | **UID `admin-test`** → vào `#/admin` |
 
 Đăng nhập: bấm "Đăng nhập với Google" → cửa sổ của Auth Emulator → chọn tài khoản. Lối tắt để test (chỉ trên emulator):
 mở `http://127.0.0.1:5173/gifts/?as=designer@test.local` rồi bấm đăng nhập (không cần popup). Email khác (vd `la@test.local`) → màn "Chưa có quà".
+Mở 2 tài khoản cùng lúc: tab `http://127.0.0.1:5173/…` và tab `http://localhost:5173/…` là hai origin khác nhau nên giữ 2 phiên đăng nhập riêng.
 Rules trong emulator lấy từ `firestore.rules`, chỉ thay UID admin thành `admin-test` lúc nạp (file không bị sửa).
+
+## Admin (`#/admin`, chỉ UID admin)
+
+- `#/admin`: khối **Mới dán** (realtime, 20 lần dán gần nhất — cần index `items` collection group trong `firestore.indexes.json`) và danh sách voucher.
+- `#/admin/new`, `#/admin/v/<email>`: form voucher + xem trước thẻ trực tiếp (cảnh báo tên tràn dòng), sticker theo nhóm
+  (số lượng ×N, lên/xuống, sửa áp dụng cả nhóm, upload PNG/GIF ≤ 100 KB, cạnh ≤ 96px), admin dán/bóc thay,
+  Reset tiết lộ, Xem như bạn bè (`#/admin/v/<email>/xem`, chỉ đọc), Xoá voucher (gõ lại email).
+- Code admin nằm ở `src/admin/**` + `src/data/admin.ts`, tải riêng (lazy) — trang bạn bè không tải.
 
 ## Firestore rules
 

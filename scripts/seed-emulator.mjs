@@ -1,8 +1,9 @@
 // Nạp dữ liệu giả vào Firebase Emulator (auth + firestore) cho `npm run dev:emu`.
 // - Rules: đọc firestore.rules, thay UID admin bằng 'admin-test' rồi nạp vào emulator qua REST
 //   (KHÔNG sửa file firestore.rules).
-// - Tài khoản Google giả: designer@test.local, gamer@test.local, reveal@test.local, admin@test.local (uid admin-test).
-// - Dữ liệu: 3 voucher. Email đều là email giả .test.local — không có email thật trong repo.
+// - Tài khoản Google giả: designer@test.local, gamer@test.local, reveal@test.local, nhom@test.local,
+//   moi@test.local (chưa có voucher — để admin tạo thử), admin@test.local (uid admin-test).
+// - Dữ liệu: 4 voucher (nhom@ có sticker ×3 theo `group`). Email đều là email giả .test.local — không có email thật trong repo.
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -57,12 +58,13 @@ async function main() {
     providerUserInfo: [{ providerId: 'google.com', rawId: `sub-${email}`, email, displayName: email.split('@')[0] }],
   });
   await call('POST', `http://${AUTH}/identitytoolkit.googleapis.com/v1/projects/${PROJECT}/accounts:batchCreate`, {
-    users: [user('designer@test.local'), user('gamer@test.local'), user('reveal@test.local'), user('admin@test.local', ADMIN_UID)],
+    users: [user('designer@test.local'), user('gamer@test.local'), user('reveal@test.local'), user('nhom@test.local'), user('moi@test.local'), user('admin@test.local', ADMIN_UID)],
   });
 
   // 3. Voucher
   const base = {
     giverName: 'Bá Lương',
+    bgSeed: 'demo000',
     revealText: 'Chúc mừng sinh nhật — chạm để tiết lộ',
     createdAt: ago(3 * DAY),
     updatedAt: ago(3 * DAY),
@@ -130,7 +132,29 @@ async function main() {
   });
   for (const [i, [t, d]] of designer.slice(0, 4).entries()) await put(`${R}/items/r${i + 1}`, item(i, t, d));
 
-  console.log('seed-emulator: xong — designer@ / gamer@ / reveal@ / admin@test.local (uid admin-test)');
+  // Sticker có số lượng: 3 bản "Bộ font" cùng group (1 bản đã dán) + 2 sticker lẻ
+  const N = 'vouchers/nhom@test.local';
+  await put(N, {
+    ...base,
+    bgSeed: 'nhom001',
+    theme: 'designer',
+    title: 'Quà có số lượng',
+    recipientName: 'Bạn Nhiều Bản',
+    message: 'Voucher thử sticker ×N. (dữ liệu emulator)',
+    slots: 5,
+    expiresAt: null,
+    revealedAt: ago(DAY),
+  });
+  const grouped = [
+    ['Bộ Font Family', 'Một bộ font tự chọn.', 'font', { used: true, usedAt: ago(2 * HOUR), slot: 0 }],
+    ['Bộ Font Family', 'Một bộ font tự chọn.', 'font', {}],
+    ['Bộ Font Family', 'Một bộ font tự chọn.', 'font', {}],
+    ['Cà phê cứu deadline', 'Một ly cà phê to nhất quán.', 'cafe', {}],
+    ['Gói mockup', 'Một gói mockup xịn.', 'mock', {}],
+  ];
+  for (const [i, [t, d, group, extra]] of grouped.entries()) await put(`${N}/items/n${i + 1}`, item(i, t, d, { group, ...extra }));
+
+  console.log('seed-emulator: xong — designer@ / gamer@ / reveal@ / nhom@ / moi@ / admin@test.local (uid admin-test)');
 }
 
 main().catch((e) => {
