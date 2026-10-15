@@ -68,7 +68,15 @@ export function VoucherScreen({ repo, voucher, items }: { repo: GiftRepo; vouche
   const focus = !!selectedItem && !full;
   useEffect(() => {
     if (!focus) return;
-    stageWrap.current?.scrollIntoView({ block: 'nearest', behavior: reducedMotion ? 'auto' : 'smooth' });
+    // chỉ cuộn khi thẻ hoặc bảng sticker đang bị khuất (đã thấy đủ thì đứng yên)
+    const card = stageWrap.current?.querySelector('.voucher-stage')?.getBoundingClientRect();
+    const tray = document.querySelector('.tray')?.getBoundingClientRect();
+    if (card && tray) {
+      const top = Math.min(card.top, tray.top);
+      const bottom = Math.max(card.bottom, tray.bottom);
+      const dy = top < 0 ? top - 8 : bottom > innerHeight ? Math.min(bottom - innerHeight + 8, top - 8) : 0;
+      if (dy) window.scrollBy({ top: dy, behavior: reducedMotion ? 'auto' : 'smooth' });
+    }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !confirm) setSelected(null);
     };
