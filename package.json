@@ -9,16 +9,18 @@
     "preview": "vite preview",
     "gen:placeholders": "node scripts/gen-placeholders.mjs",
     "check:assets": "node scripts/check-assets.mjs",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-gifts \"vitest run tests/rules --no-file-parallelism\""
+    "test:rules": "firebase emulators:exec --only firestore --project demo-gifts \"vitest run tests/rules --no-file-parallelism\"",
+    "dev:emu": "firebase emulators:exec --only auth,firestore --project demo-gifts \"node scripts/seed-emulator.mjs && vite --host 127.0.0.1\"",
+    "seed:emu": "node scripts/seed-emulator.mjs"
   },
   "dependencies": {
     "@fontsource/nunito": "^5.3.0",
+    "firebase": "^13.0.0",
     "preact": "^11.0.1"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^6.0.0",
     "@preact/preset-vite": "^2.10.6",
-    "firebase": "^13.0.0",
     "fontkit": "^2.0.4",
     "pngjs": "^7.0.0",
     "typescript": "^7.0.2",

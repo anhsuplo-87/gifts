@@ -8,7 +8,9 @@ Vite + Preact + TypeScript, deploy lên GitHub Pages khi push `main`.
 
 | Lệnh | Việc |
 |---|---|
-| `npm run dev` | Chạy local, mở `http://localhost:5173/gifts/` |
+| `npm run dev` | Chạy local, mở `http://localhost:5173/gifts/` (bản dev nối emulator; cần `dev:emu` đang chạy, hoặc dùng `?mock=`) |
+| `npm run dev:emu` | Bật Auth + Firestore Emulator, nạp dữ liệu giả, rồi chạy Vite ở `http://127.0.0.1:5173/gifts/` |
+| `npm run seed:emu` | Nạp lại dữ liệu giả vào emulator đang chạy |
 | `npm run build` | `check:assets` + kiểm tra kiểu + build ra `dist/` |
 | `npm run gen:placeholders` | Sinh hình placeholder còn thiếu trong `public/assets/ui/` (`-- --force` để ghi đè tất cả) |
 | `npm run check:assets` | Báo lỗi nếu hình thiếu / sai kích thước, hoặc số trong `layout.ts` không khớp nhau |
@@ -66,13 +68,39 @@ Có `?mock` trên URL thì góc phải dưới có thanh chọn chế độ.
 | dearpix-2-01 | ygygfu (Fontstruct) | SIL OFL 1.1 — `license.txt` trong thư mục | https://fontstruct.com/fontstructions/show/2872297 |
 | Nunito | Vernon Adams, Cyreal | SIL OFL 1.1 | https://fontsource.org/fonts/nunito |
 
+## Firebase
+
+- Config ở `src/config.ts` (config web Firebase là công khai theo thiết kế; dữ liệu được bảo vệ bằng `firestore.rules`).
+- Không có `?mock` trên URL → app dùng Firebase: bản build dùng project thật `gifts-anhsuplo`;
+  `npm run dev` hoặc URL có `?emu` → dùng **emulator** (project `demo-gifts`, không chạm project thật).
+  `?prod` trên bản dev → dùng project thật.
+- Firebase được tải động (chunk riêng), trang `?mock=` không tải Firebase.
+
+### Chạy với emulator
+
+```
+npm run dev:emu
+```
+Seed tạo 4 tài khoản Google giả (không có email thật):
+
+| Email | Dữ liệu |
+|---|---|
+| `designer@test.local` | 8 ô, 6 sticker, 2 đã dán (1 cái dán 1 giờ trước → bóc được) |
+| `gamer@test.local` | 1 ô, 6 game |
+| `reveal@test.local` | Chưa tiết lộ |
+| `admin@test.local` | **UID `admin-test`** → vào `#/admin` |
+
+Đăng nhập: bấm "Đăng nhập với Google" → cửa sổ của Auth Emulator → chọn tài khoản. Lối tắt để test (chỉ trên emulator):
+mở `http://127.0.0.1:5173/gifts/?as=designer@test.local` rồi bấm đăng nhập (không cần popup). Email khác (vd `la@test.local`) → màn "Chưa có quà".
+Rules trong emulator lấy từ `firestore.rules`, chỉ thay UID admin thành `admin-test` lúc nạp (file không bị sửa).
+
 ## Firestore rules
 
 - Rules ở `firestore.rules`, test ở `tests/rules/` (Vitest + `@firebase/rules-unit-testing`).
 - Chạy test cần **Java 21** và Firebase CLI (`npm i -g firebase-tools`). Project id tạm `demo-gifts`, chỉ chạy emulator.
-- **UID admin:** sửa đúng một dòng trong `firestore.rules`:
-  ```
-  function adminUid() { return 'ADMIN_UID_PLACEHOLDER'; }
-  ```
-  Thay `ADMIN_UID_PLACEHOLDER` bằng UID thật (Firebase Console → Authentication → Users). Test tự thay dòng này bằng UID giả nên không cần sửa test.
+- **UID admin:** ở Cổng 3 sửa **hai chỗ** cho khớp nhau:
+  - `firestore.rules`: `function adminUid() { return 'ADMIN_UID_PLACEHOLDER'; }`
+  - `src/config.ts`: `ADMIN_UID_PROD = 'ADMIN_UID_PLACEHOLDER'`
+
+  Lấy UID ở Firebase Console → Authentication → Users. Test và emulator tự thay UID giả nên không cần sửa.
 - **Không deploy rules** lên Firebase thật trước Cổng 3.
