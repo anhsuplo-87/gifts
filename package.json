@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "npm run check:assets && tsc --noEmit && vite build",
     "preview": "vite preview",
+    "gen:placeholders": "node scripts/gen-placeholders.mjs",
+    "check:assets": "node scripts/check-assets.mjs",
     "test:rules": "firebase emulators:exec --only firestore --project demo-gifts \"vitest run tests/rules --no-file-parallelism\""
   },
   "dependencies": {
