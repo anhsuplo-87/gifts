@@ -1,11 +1,13 @@
 import { lazy, Suspense } from 'preact/compat';
 import { GiftIcon } from './GiftIcon';
 
-// Trang thử font chỉ tải khi mở bằng ?fonts
-const FontTest = lazy(() => import('./fonts/FontTest').then((m) => ({ default: m.FontTest })));
+// Trang thử font chỉ có ở bản dev (import.meta.env.DEV = false khi build → bị loại khỏi bundle)
+const FontTest = import.meta.env.DEV
+  ? lazy(() => import('./fonts/FontTest').then((m) => ({ default: m.FontTest })))
+  : null;
 
 export function App() {
-  if (new URLSearchParams(location.search).has('fonts')) {
+  if (FontTest && new URLSearchParams(location.search).has('fonts')) {
     return (
       <Suspense fallback={<p class="center">Đang tải…</p>}>
         <FontTest />

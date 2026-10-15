@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'preact/hooks';
-import '@fontsource/pixelify-sans/400.css';
-import '@fontsource/geist-pixel/400.css';
-import '@fontsource/inter/400.css';
 import metrics from './font-metrics.json';
 import './font-test.css';
 
-// Trang thử font (?fonts) — task 001. Số liệu cỡ gốc + glyph thiếu lấy từ
+// Trang thử font (?fonts) — task 001. Chỉ có ở bản dev (font dự phòng nằm trong public/fonts/_unused). Số liệu cỡ gốc + glyph thiếu lấy từ
 // scripts/check-font-glyphs.mjs --write
 
 const SAMPLE = 'Chúc mừng sinh nhật! Hỗ trợ dân Design — Bá Lương tặng. Ặ ẫ ỡ ự ổ ề Đ đ 0123456789';
@@ -26,10 +23,7 @@ const LOCAL: FontDef[] = Object.entries(M)
 
 const FONTS: FontDef[] = [
   ...LOCAL,
-  { name: 'Pixelify Sans', family: 'Pixelify Sans', pixel: true },
-  { name: 'Geist Pixel', family: 'Geist Pixel', pixel: true },
   { name: 'Nunito', family: 'Nunito', pixel: false },
-  { name: 'Inter', family: 'Inter', pixel: false },
 ];
 
 // Nạp font tự host trong public/fonts nếu file có mặt; trả về false nếu thiếu

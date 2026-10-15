@@ -7,14 +7,10 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "check:fonts": "node scripts/check-font-glyphs.mjs",
     "test:rules": "firebase emulators:exec --only firestore --project demo-gifts \"vitest run tests/rules --no-file-parallelism\""
   },
   "dependencies": {
-    "@fontsource/geist-pixel": "^5.3.0",
-    "@fontsource/inter": "^5.3.0",
     "@fontsource/nunito": "^5.3.0",
-    "@fontsource/pixelify-sans": "^5.3.0",
     "preact": "^11.0.1"
   },
   "devDependencies": {
@@ -22,6 +18,7 @@
     "@preact/preset-vite": "^2.10.6",
     "firebase": "^13.0.0",
     "fontkit": "^2.0.4",
+    "pngjs": "^7.0.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
     "vitest": "^5.0.4"

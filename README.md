@@ -10,27 +10,23 @@ Vite + Preact + TypeScript, deploy lên GitHub Pages khi push `main`.
 |---|---|
 | `npm run dev` | Chạy local, mở `http://localhost:5173/gifts/` |
 | `npm run build` | Kiểm tra kiểu + build ra `dist/` |
-| `npm run check:fonts` | Liệt kê chữ tiếng Việt bị thiếu glyph trong từng font |
 | `npm run test:rules` | Chạy test Firestore rules trên emulator |
 
-Trang thử font: `http://localhost:5173/gifts/?fonts`.
 
 ## Font
 
-- Font pixel tự tải: đặt file `.ttf`/`.otf` vào `public/fonts/` (được để trong thư mục con).
-- Pixelify Sans, Geist Pixel, Nunito, Inter: self-host qua `@fontsource` (SIL OFL 1.1).
-- Thêm/đổi font thì chạy `node scripts/check-font-glyphs.mjs --write` để cập nhật
-  `src/fonts/font-metrics.json` (cỡ gốc + glyph thiếu) cho trang thử font.
+- Chữ pixel: **dearpix-2-01** (`public/fonts/dearpix-2-01/`), cỡ gốc 16px, luôn vẽ ở `16px × --px`.
+- Chữ nội dung: **Nunito** qua `@fontsource/nunito` (subset latin + vietnamese).
+- Font thử nghiệm khác để trong `public/fonts/_unused/` (bị `.gitignore`, chỉ ở máy).
+  Trang thử font `?fonts` chỉ có khi chạy `npm run dev`.
+- `node scripts/check-font-glyphs.mjs --write`: đếm chữ tiếng Việt thiếu glyph + đo cỡ gốc.
 
-### Giấy phép font trong `public/fonts/`
+### Giấy phép font
 
 | Font | Tác giả | Giấy phép | Nguồn |
 |---|---|---|---|
-| m5x7 | Daniel Linssen | CC0 1.0 ("free to use but attribution appreciated") | https://managore.itch.io/m5x7 |
-| m6x11, m6x11plus | Daniel Linssen | "Free to use with attribution" — **phải ghi công** nếu dùng | https://managore.itch.io/m6x11 |
-| dearpix-1-94, dearpix-2-01 | ygygfu (Fontstruct) | SIL OFL 1.1 — `license.txt` trong thư mục | https://fontstruct.com/fontstructions/show/2815314 · https://fontstruct.com/fontstructions/show/2872297 |
-| kvn-97 | Kiên Trung (Fontstruct) | SIL OFL 1.1 — `license.txt` trong thư mục | https://fontstruct.com/fontstructions/show/2305827 |
-| SVN-Determination Sans | Haley Wakamatsu (Determination, 2015) dựa trên 8-bit Operator (Grand Chaos Productions); Việt hoá: STYLEno.1 Fonts | Trang tải svnfont: "Font miễn phí cho mọi mục đích sử dụng"; bản gốc trên Behance ghi "Free font"; 8-bit Operator theo SIL OFL 1.1 — chuỗi nguồn đầy đủ trong `SOURCE.md` | https://www.svnfont.com/viet-hoa-svn-determination-sans/ · https://www.behance.net/gallery/31268855/Determination-Better-Undertale-Font |
+| dearpix-2-01 | ygygfu (Fontstruct) | SIL OFL 1.1 — `license.txt` trong thư mục | https://fontstruct.com/fontstructions/show/2872297 |
+| Nunito | Vernon Adams, Cyreal | SIL OFL 1.1 | https://fontsource.org/fonts/nunito |
 
 ## Firestore rules
 

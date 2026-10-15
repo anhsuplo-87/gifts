@@ -6,11 +6,6 @@ dist
 # Tài liệu giữ ở máy đến sau 16/10, không push
 docs/
 .claude/
-# Font không dùng / chưa rõ giấy phép: không đưa lên repo public
-public/fonts/zip/
-public/fonts/*.zip
-public/fonts/*.ZIP
-public/fonts/DTM/
-public/fonts/DFVNPexelGrotesk/
-public/fonts/FVF-Fernando-08/
+# Font không dùng (chỉ giữ ở máy, không đưa lên repo public)
+public/fonts/_unused/
 public/fonts/**/*.url
