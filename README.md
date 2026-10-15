@@ -9,9 +9,37 @@ Vite + Preact + TypeScript, deploy lên GitHub Pages khi push `main`.
 | Lệnh | Việc |
 |---|---|
 | `npm run dev` | Chạy local, mở `http://localhost:5173/gifts/` |
-| `npm run build` | Kiểm tra kiểu + build ra `dist/` |
+| `npm run build` | `check:assets` + kiểm tra kiểu + build ra `dist/` |
+| `npm run gen:placeholders` | Sinh hình placeholder còn thiếu trong `public/assets/ui/` (`-- --force` để ghi đè tất cả) |
+| `npm run check:assets` | Báo lỗi nếu hình thiếu / sai kích thước, hoặc số trong `layout.ts` không khớp nhau |
 | `npm run test:rules` | Chạy test Firestore rules trên emulator |
 
+
+## Prototype dữ liệu giả (`?mock=`)
+
+Chưa nối Firebase: trang luôn dùng `MockRepo` (`src/data/mock.ts`), mặc định `?mock=login`.
+Có `?mock` trên URL thì góc phải dưới có thanh chọn chế độ.
+
+| `?mock=` | Màn |
+|---|---|
+| `login` | Đăng nhập (bấm → `reveal`) |
+| `inapp` | Mở bằng Chrome/Safari + copy link |
+| `reveal` | Voucher designer chưa tiết lộ |
+| `designer` | 8 ô, 6 sticker, 2 đã dán (1 cái dán 1 giờ trước → bóc được) |
+| `designer-full` | Đã dán đủ 8 ô, đã quá hạn |
+| `gamer` | 1 ô, 6 game |
+| `gamer-done` | 1 ô đã chọn |
+| `empty` | Chưa có quà |
+| `error` | Lỗi tải + thử lại |
+| `flaky` | Như `designer` nhưng khoảng 1/3 thao tác bị lỗi giả |
+
+## Kích thước & hình
+
+- Mọi kích thước voucher / ô / sticker / vùng chữ: `src/voucher/layout.ts` (đơn vị pixel gốc).
+- Danh sách hình (tên, kích thước, slice): `src/voucher/assets.ts` — dùng chung cho UI, `gen:placeholders`, `check:assets`.
+- Bảng màu theme: `src/voucher/themes.ts` — sinh CSS tokens `[data-theme=…]` và dùng cho placeholder.
+- Đổi kích thước: sửa `layout.ts` → `npm run gen:placeholders -- --force` → `npm run build`.
+  (`--force` ghi đè cả hình vẽ thật — chỉ dùng khi chưa có hình, hoặc xoá riêng file cần sinh lại.)
 
 ## Font
 
